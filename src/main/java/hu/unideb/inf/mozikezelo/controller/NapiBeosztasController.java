@@ -40,10 +40,11 @@ public class NapiBeosztasController {
         return service.napra(datum);
     }
 
-    // Egy előadás kiválasztása a listából.
+    // Egy előadás kiválasztása a listából. Tokennel csak a felhasználó által igényelhető jegyek jelennek meg.
     @GetMapping("/{id}")
-    public EloadasReszletekResponse eloadas(@PathVariable @Positive Long id) {
-        return service.reszletek(id);
+    public EloadasReszletekResponse eloadas(@PathVariable @Positive Long id,
+                                            @AuthenticationPrincipal FelhasznaloEntity felhasznalo) {
+        return service.reszletek(id, felhasznalo == null ? null : felhasznalo.getSzuletesiDatum());
     }
 
     // Átlépés a jegyfoglalásba: film, időpont és terem az előadásból adott.

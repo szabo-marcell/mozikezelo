@@ -26,6 +26,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    public static final String ADMIN_JOG = "ADMIN";
+
     private final UserService userService;
     private final JwtFilter jwtFilter;
 
@@ -46,6 +48,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/mozi", "/api/filmek/**", "/api/termek/**",
                                 "/api/napi-beosztas/**")
                         .permitAll()
+                        // Filmet felvenni, módosítani és törölni csak ADMIN jogú felhasználó tud. Mást az ADMIN sem módosíthat.
+                        .requestMatchers(HttpMethod.POST, "/api/filmek").hasAuthority(ADMIN_JOG)
+                        .requestMatchers(HttpMethod.PUT, "/api/filmek/*").hasAuthority(ADMIN_JOG)
+                        .requestMatchers(HttpMethod.DELETE, "/api/filmek/*").hasAuthority(ADMIN_JOG)
                         // Profil, foglalás és visszamondás csak bejelentkezve.
                         .anyRequest()
                         .authenticated())

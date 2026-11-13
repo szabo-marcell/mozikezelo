@@ -1,6 +1,7 @@
 package hu.unideb.inf.mozikezelo.bootstrap;
 
 import hu.unideb.inf.mozikezelo.data.entity.*;
+import hu.unideb.inf.mozikezelo.data.entity.enums.JegyTipus;
 import hu.unideb.inf.mozikezelo.data.entity.enums.VetitesTipus;
 import hu.unideb.inf.mozikezelo.data.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -54,10 +55,11 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         TeremEntity kek = terem("Kék terem", 1, 60, VetitesTipus.KET_D);
         TeremEntity kamara = terem("Kamaraterem", 1, 30, VetitesTipus.KET_D);
 
-        JegyEntity teljes = jegy("Teljes árú", 2990, null);
-        jegy("Diák", 2390, "Érvényes diákigazolvány");
-        jegy("Nyugdíjas", 2190, "Nyugdíjas igazolvány");
-        jegy("Gyerek", 1990, "12 év alatti néző");
+        // Pontosan négyféle jegy létezik; a feltételt a JegyTipus határozza meg.
+        JegyEntity teljes = jegyRepository.save(new JegyEntity(JegyTipus.TELJES_ARU, 2990));
+        jegyRepository.save(new JegyEntity(JegyTipus.DIAK, 2390));
+        jegyRepository.save(new JegyEntity(JegyTipus.NYUGDIJAS, 2190));
+        jegyRepository.save(new JegyEntity(JegyTipus.GYEREK, 1990));
 
         LocalDate ma = LocalDate.now(clock);
         FilmEntity f1 = film("A csillagok őrzője", ma.minusDays(20), 142, "sci-fi", "USA");
@@ -95,14 +97,6 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         return teremRepository.save(t);
     }
 
-    private JegyEntity jegy(String nev, int ar, String feltetel) {
-        JegyEntity j = new JegyEntity();
-        j.setNev(nev);
-        j.setAr(ar);
-        j.setFeltetel(feltetel);
-        return jegyRepository.save(j);
-    }
-
     private FilmEntity film(String cim, LocalDate bemutato, int hossz, String mufaj, String orszag) {
         FilmEntity f = new FilmEntity();
         f.setCim(cim);
@@ -124,7 +118,6 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         b.setTerem(terem);
         b.setDatum(datum);
         b.setKezdes(kezdes);
-        // 15 perc reklám + a film hossza; éjfél után a nap végén zárjuk.
         LocalTime vege = kezdes.plusMinutes(film.getHosszPerc() + 15L);
         b.setBefejezes(vege.isBefore(kezdes) ? LocalTime.of(23, 59) : vege);
         b.setEredetiNyelvu(eredetiNyelvu);

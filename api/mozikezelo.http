@@ -57,7 +57,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "jegyNev": "Diák",
+  "jegyNev": "Teljes árú",
   "szekSzam": 12
 }
 

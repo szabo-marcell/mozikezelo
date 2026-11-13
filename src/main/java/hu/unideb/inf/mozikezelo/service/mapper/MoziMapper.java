@@ -4,6 +4,7 @@ import hu.unideb.inf.mozikezelo.data.entity.*;
 import hu.unideb.inf.mozikezelo.service.dto.domain.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
@@ -14,6 +15,12 @@ public interface MoziMapper {
     MoziResponse mozi(MoziEntity entity);
 
     FilmResponse film(FilmEntity entity);
+
+    @Mapping(target = "id", ignore = true)
+    FilmEntity ujFilm(FilmRequest request);
+
+    @Mapping(target = "id", ignore = true)
+    void filmFrissites(FilmRequest request, @MappingTarget FilmEntity entity);
 
     TeremResponse terem(TeremEntity entity);
 

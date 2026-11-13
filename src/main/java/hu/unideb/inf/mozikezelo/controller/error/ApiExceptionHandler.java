@@ -143,7 +143,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception exception, Object body,
             HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        // A Spring beépített hibái (például 405, 415, hibás path paraméter) is ezt a formát használják.
+
         ProblemDetail problem = body instanceof ProblemDetail detail ? detail
                 : createProblemDetail(exception, status, "A kérés feldolgozása sikertelen.", null, null, request);
         if (problem.getProperties() == null || !problem.getProperties().containsKey("errors")) {

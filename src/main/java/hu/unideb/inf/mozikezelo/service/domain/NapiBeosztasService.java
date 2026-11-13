@@ -27,6 +27,7 @@ public class NapiBeosztasService {
     private final NapiBeosztasRepository beosztasok;
     private final JegyfoglalasRepository foglalasok;
     private final JegyRepository jegyek;
+    private final JegyFeltetelEllenorzo jegyFeltetel;
     private final MoziMapper mapper;
     private final Clock clock;
 
@@ -34,8 +35,11 @@ public class NapiBeosztasService {
         return beosztasok.findAllByDatumOrderByKezdes(datum).stream().map(mapper::beosztas).toList();
     }
 
-    // Egy előadás kiválasztása: a foglaláshoz szükséges szabad székek és jegytípusok.
-    public EloadasReszletekResponse reszletek(Long id) {
+    /**
+     * Egy előadás kiválasztása: a foglaláshoz szükséges szabad székek és jegytípusok.
+     * Bejelentkezett felhasználónak (szuletesiDatum != null) csak az általa igényelhető jegyeket listázzuk.
+     */
+    public EloadasReszletekResponse reszletek(Long id, LocalDate szuletesiDatum) {
         NapiBeosztasEntity beosztas = eloadas(id);
         var foglalt = new HashSet<>(foglalasok.foglaltSzekek(id));
         int ferohely = beosztas.getTerem().getFerohely();
@@ -45,7 +49,9 @@ public class NapiBeosztasService {
                 response,
                 ferohely,
                 szabad,
-                jegyek.findAll(Sort.by("ar", "nev")).stream().map(mapper::jegy).toList(),
+                jegyek.findAll(Sort.by("ar", "nev")).stream()
+                        .filter(j -> szuletesiDatum == null || jegyFeltetel.igenyelheto(j, szuletesiDatum))
+                        .map(mapper::jegy).toList(),
                 !elkezdodott(beosztas, clock) && !szabad.isEmpty(),
                 response.foglalasUrl());
     }

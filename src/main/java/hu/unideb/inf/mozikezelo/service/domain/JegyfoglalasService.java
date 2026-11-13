@@ -1,5 +1,6 @@
 package hu.unideb.inf.mozikezelo.service.domain;
 
+import hu.unideb.inf.mozikezelo.data.entity.FelhasznaloEntity;
 import hu.unideb.inf.mozikezelo.data.entity.JegyEntity;
 import hu.unideb.inf.mozikezelo.data.entity.JegyfoglalasEntity;
 import hu.unideb.inf.mozikezelo.data.entity.NapiBeosztasEntity;
@@ -39,6 +40,7 @@ public class JegyfoglalasService {
     private final JegyRepository jegyek;
     private final FelhasznaloRepository felhasznalok;
     private final NapiBeosztasService beosztasService;
+    private final JegyFeltetelEllenorzo jegyFeltetel;
     private final MoziMapper mapper;
     private final Clock clock;
 
@@ -91,6 +93,14 @@ public class JegyfoglalasService {
         if (szekSzam < 1 || szekSzam > ferohely) {
             throw new HibasKeresException("A szék száma 1 és " + ferohely + " között lehet ebben a teremben.");
         }
+        FelhasznaloEntity felhasznalo = felhasznalok.findById(felhasznaloId)
+                .orElseThrow(() -> new ErforrasNotFoundException("A felhasználó nem található."));
+        JegyEntity jegy = jegy(jegyNev);
+        if (!jegyFeltetel.igenyelheto(jegy, felhasznalo.getSzuletesiDatum())) {
+            throw new UzletiSzabalyException("A(z) \"" + jegy.getNev() + "\" jegy nem igényelhető. Feltétel: "
+                    + jegy.getFeltetel() + ". A születési év alapján számolt életkor: "
+                    + jegyFeltetel.kor(felhasznalo.getSzuletesiDatum()) + " év.");
+        }
         if (foglalasok.existsByNapiBeosztas_IdAndSzekSzam(beosztas.getId(), szekSzam)) {
             throw new UzletiSzabalyException("A(z) " + szekSzam + ". szék erre az előadásra már foglalt.");
         }
@@ -99,8 +109,8 @@ public class JegyfoglalasService {
         foglalas.setNapiBeosztas(beosztas);
         foglalas.setFilm(beosztas.getFilm());
         foglalas.setTerem(beosztas.getTerem());
-        foglalas.setJegy(jegy(jegyNev));
-        foglalas.setFelhasznalo(felhasznalok.getReferenceById(felhasznaloId));
+        foglalas.setJegy(jegy);
+        foglalas.setFelhasznalo(felhasznalo);
         foglalas.setSzekSzam(szekSzam);
         // A párhuzamos foglalást az egyedi (előadás, szék) kényszer is kiszűri: 409-es válasz.
         return mapper.foglalas(foglalasok.saveAndFlush(foglalas));
