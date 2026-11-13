@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface NapiBeosztasRepository extends JpaRepository<NapiBeosztasEntity, Long> {
 
@@ -20,6 +21,14 @@ public interface NapiBeosztasRepository extends JpaRepository<NapiBeosztasEntity
 
     @EntityGraph(attributePaths = {"film", "terem", "jegy"})
     List<NapiBeosztasEntity> findAllByFilm_IdAndDatumGreaterThanEqualOrderByDatumAscKezdesAsc(Long filmId, LocalDate datum);
+
+    @Override
+    @EntityGraph(attributePaths = {"film", "terem", "jegy"})
+    Optional<NapiBeosztasEntity> findById(Long id);
+
+    // Előadás keresése a film pontos címe és az időpont alapján.
+    @EntityGraph(attributePaths = {"film", "terem", "jegy"})
+    List<NapiBeosztasEntity> findAllByFilm_CimIgnoreCaseAndDatumAndKezdes(String filmCim, LocalDate datum, LocalTime kezdes);
 
     boolean existsByFilm_Id(Long filmId);
 

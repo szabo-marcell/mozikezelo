@@ -20,12 +20,12 @@ public class JegyEntity extends AuditEntity {
     @Column(nullable = false, length = 100)
     private String nev;
 
-    // Ár forintban.
+
     @Min(0)
     @Column(nullable = false)
     private int ar;
 
-    // Milyen feltétel kell az igényléshez (pl. érvényes diákigazolvány).
+
     @Column(length = 255)
     private String feltetel;
 }
