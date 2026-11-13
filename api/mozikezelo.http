@@ -1,0 +1,96 @@
+@host = http://localhost:9090
+# Mintaadatokkal indított adatbázisban: demo@mozi.hu / demo1234
+# A bejelentkezés válaszából a token értékét másold ide.
+@token = ide-masold-a-tokent
+@datum = 2026-11-14
+@beosztasId = 8
+@foglalasKod = MZ-XXXXXXXX
+
+### Regisztráció
+POST {{host}}/auth/regisztracio
+Content-Type: application/json
+
+{
+  "nev": "Próba Péter",
+  "email": "peter@example.com",
+  "jelszo": "titkos123",
+  "szuletesiDatum": "1999-05-20"
+}
+
+### Bejelentkezés (a válaszban a token)
+POST {{host}}/auth/bejelentkezes
+Content-Type: application/json
+
+{
+  "email": "demo@mozi.hu",
+  "jelszo": "demo1234"
+}
+
+### Saját profil
+GET {{host}}/api/felhasznalo/profil
+Authorization: Bearer {{token}}
+
+### Mozi alapadatai
+GET {{host}}/api/mozi
+
+### Film pontos cím szerint
+GET {{host}}/api/filmek?cim=Nyári zápor
+
+### Film bemutató dátum szerint
+GET {{host}}/api/filmek?bemutatoDatum=2026-11-07
+
+### Terem azonosító szerint
+GET {{host}}/api/termek/1
+
+### Terem név szerint
+GET {{host}}/api/termek/kereses?nev=Nagyterem
+
+### Napi beosztás nap szerint (minden előadásnál reszletekUrl és foglalasUrl)
+GET {{host}}/api/napi-beosztas?datum={{datum}}
+
+### Egy előadás kiválasztása: szabad székek, választható jegytípusok
+GET {{host}}/api/napi-beosztas/{{beosztasId}}
+
+### "Jegyfoglalás" gomb: film, időpont, terem adott – csak jegytípus és szék
+POST {{host}}/api/napi-beosztas/{{beosztasId}}/foglalas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "jegyNev": "Diák",
+  "szekSzam": 12
+}
+
+### Foglalás minden adat megadásával
+POST {{host}}/api/jegyfoglalasok
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "filmCim": "A csillagok őrzője",
+  "datum": "{{datum}}",
+  "kezdes": "18:00",
+  "jegyNev": "Teljes árú",
+  "szekSzam": 40
+}
+
+### Saját foglalások
+GET {{host}}/api/jegyfoglalasok
+Authorization: Bearer {{token}}
+
+### Visszamondás rendelésazonosítóval
+DELETE {{host}}/api/jegyfoglalasok/{{foglalasKod}}
+Authorization: Bearer {{token}}
+
+### Visszamondás az összes adat megadásával
+POST {{host}}/api/jegyfoglalasok/lemondas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "filmCim": "A csillagok őrzője",
+  "datum": "{{datum}}",
+  "kezdes": "18:00",
+  "jegyNev": "Teljes árú",
+  "szekSzam": 40
+}
