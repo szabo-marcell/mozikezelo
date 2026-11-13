@@ -1,0 +1,12 @@
+package hu.unideb.inf.mozikezelo.data.repository;
+
+import hu.unideb.inf.mozikezelo.data.entity.JogEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface JogRepository extends JpaRepository<JogEntity, Long> {
+    Optional<JogEntity> findByNev(String nev);
+}
