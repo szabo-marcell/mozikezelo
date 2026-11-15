@@ -9,5 +9,6 @@ public interface AuthenticationService {
 
     FelhasznaloResponse regisztracio(FelhasznaloCreateRequest dto);
 
-    TokenResponse bejelentkezes(FelhasznaloLoginRequest dto);
+    // Az IP-cím a próbálkozások korlátozásához kell (BejelentkezesVedelem).
+    TokenResponse bejelentkezes(FelhasznaloLoginRequest dto, String ip);
 }

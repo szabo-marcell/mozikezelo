@@ -93,6 +93,11 @@ public class FilmService {
     private static FilmRequest normalizal(FilmRequest r) {
         return new FilmRequest(r.cim().strip(), r.bemutatoDatum(), r.hosszPerc(), r.mufaj().strip(),
                 r.gyartoOrszag().strip(), r.forgalmazo().strip(), r.gyartoCeg().strip(),
-                r.foszereplo().strip(), r.rendezo().strip());
+                r.foszereplo().strip(), r.rendezo().strip(), uresbolNull(r.foszinkronszinesz()),
+                uresbolNull(r.leiras()), uresbolNull(r.kepUrl()));
+    }
+
+    private static String uresbolNull(String s) {
+        return s == null || s.isBlank() ? null : s.strip();
     }
 }

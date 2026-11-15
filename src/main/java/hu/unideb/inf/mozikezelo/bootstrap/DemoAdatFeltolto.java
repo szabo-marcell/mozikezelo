@@ -17,8 +17,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Üres adatbázis feltöltése bemutató adatokkal: mozi, termek, jegytípusok, filmek,
- * a mai és a következő két nap beosztása, valamint két felhasználó.
+ * Üres adatbázis feltöltése bemutató adatokkal: mozi, termek, jegytípusok, a mozikban jelenleg
+ * vetített filmek, a mai és a következő két nap beosztása, valamint két felhasználó.
  * Demo belépés: demo@mozi.hu / demo1234, admin@mozi.hu / admin1234
  */
 @Slf4j
@@ -26,6 +26,14 @@ import java.time.LocalTime;
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "app.demo-data", name = "enabled", havingValue = "true")
 public class DemoAdatFeltolto implements CommandLineRunner {
+
+    private static final String KEPEK = "/img/filmek/";
+    // Reklám + előzetesek a film előtt, illetve takarítás két előadás között (percben).
+    private static final int REKLAM_PERC = 15;
+    private static final int TAKARITAS_PERC = 15;
+    private static final int UTOLSO_BEFEJEZES_PERC = 23 * 60 + 45;
+    // Ettől az időponttól a szinkronizált filmeket is eredeti nyelven (felirattal) vetítjük.
+    private static final LocalTime ESTI_EREDETI_NYELVU = LocalTime.of(20, 0);
 
     private final MoziRepository moziRepository;
     private final JogRepository jogRepository;
@@ -44,7 +52,7 @@ public class DemoAdatFeltolto implements CommandLineRunner {
             log.info("A mintaadat-feltöltés kimarad: az adatbázis már tartalmaz adatokat.");
             return;
         }
-        moziRepository.save(new MoziEntity("Minta Mozi", "Debrecen", "Minta utca 1.", 2004));
+        moziRepository.save(new MoziEntity("Dynamic Cinema", "Debrecen", "Lumiére u. 7.", 2004));
 
         JogEntity admin = jogRepository.save(new JogEntity(null, "ADMIN", "Mozi adminisztrátor"));
         JogEntity felhasznalo = jogRepository.save(new JogEntity(null, "FELHASZNALO", "Regisztrált mozilátogató"));
@@ -61,19 +69,71 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         jegyRepository.save(new JegyEntity(JegyTipus.NYUGDIJAS, 2190));
         jegyRepository.save(new JegyEntity(JegyTipus.GYEREK, 1990));
 
-        LocalDate ma = LocalDate.now(clock);
-        FilmEntity f1 = film("A csillagok őrzője", ma.minusDays(20), 142, "sci-fi", "USA");
-        FilmEntity f2 = film("Nyári zápor", ma.minusDays(6), 98, "romantikus", "Magyarország");
-        FilmEntity f3 = film("Az utolsó állomás", ma.minusDays(40), 117, "thriller", "Franciaország");
+        // A mozikban jelenleg vetített filmek. Szinkronszínész csak a szinkronizált külföldi filmeknél van.
+        FilmEntity hogyan2 = film("Hogyan tudnék élni nélküled? 2.", LocalDate.of(2026, 11, 12), 114,
+                "romantikus", "Magyarország", "InterCom", "IKO Production",
+                "Törőcsik Franciska", "Dyga Zsombor", null, "hogyan-tudnek-elni-nelkuled-2.svg",
+                "Demjén Ferenc dalaira épülő zenés romantikus vígjáték folytatása. Az első rész szereplőinek "
+                        + "élete újabb fordulatot vesz: szerelem, barátság és családi kalamajkák, "
+                        + "közösen énekelhető slágerekkel.");
+        FilmEntity ebenezer = film("Ebenezer", LocalDate.of(2026, 11, 12), 116,
+                "családi", "USA", "UIP-Duna Film", "Paramount Pictures",
+                "Johnny Depp", "Ti West", "Stohl András", "ebenezer.svg",
+                "Charles Dickens Karácsonyi énekének új mozis feldolgozása. A zsugori és magának való "
+                        + "Ebenezer Scrooge-ot szenteste éjjelén három szellem látogatja meg, hogy megmutassák "
+                        + "neki múltját, jelenét és jövőjét, és talán egy utolsó esélyt is adjanak neki.");
+        FilmEntity agyagpofa = film("Agyagpofa", LocalDate.of(2026, 9, 10), 108,
+                "testhorror", "USA", "InterCom", "DC Studios",
+                "Tom Rhys-Harries", "James Watkins", "Brasch Bence", "agyagpofa.svg",
+                "Matt Hagen, a feltörekvő színész karrierje egy brutális támadás után egy csapásra véget ér: "
+                        + "eltorzult arcát egy kétes kísérleti kezelés hozza helyre, ám a teste ettől kezdve "
+                        + "formálható agyaggá válik. A DC-univerzum sötét, testhorror-elemekkel teli eredettörténete.");
+        FilmEntity orokseg = film("Az örökség", LocalDate.of(2026, 10, 22), 90,
+                "thriller", "Magyarország", "Vertigo Média", "Független magyar produkció",
+                "Mucsi Zoltán", "Tasnádi István", null, "az-orokseg.svg",
+                "Egy özvegy apa a megtakarításait egy nála jóval fiatalabb nőre kezdi költeni, amivel felnőtt "
+                        + "gyerekei gyanúját is felkelti, és a családi feszültségből hamarosan bűnügy lesz. "
+                        + "Tasnádi István, az Aranyélet vezető írójának első rendezése nyolc év után jutott mozikba.");
+        FilmEntity residentEvil = film("Resident Evil", LocalDate.of(2026, 9, 17), 95,
+                "horror", "USA", "InterCom", "Constantin Film / Sony Pictures",
+                "Austin Abrams", "Zach Cregger", "Kerek Dávid", "resident-evil.svg",
+                "A legendás Capcom videojáték-sorozat új mozis feldolgozása a Barbár rendezőjétől. Egy egyszerű "
+                        + "futár egyetlen éjszaka alatt kénytelen átvágni a járvány sújtotta Raccoon Cityn, "
+                        + "miközben egyre közelebb kerül az Umbrella vállalat sötét titkaihoz.");
+        FilmEntity kalapos = film("Kalapos Macska", LocalDate.of(2026, 11, 5), 110,
+                "családi", "USA", "InterCom", "Warner Bros. Pictures Animation",
+                "Bill Hader", "Alessandro Carloni", "Miller Zoltán", "kalapos-macska.svg",
+                "Dr. Seuss klasszikus meséjének animációs feldolgozása. Egy esős délutánon két unatkozó "
+                        + "testvérhez beállít a csíkos kalapot viselő, kiszámíthatatlan macska, és a ház "
+                        + "pillanatok alatt a feje tetejére áll.");
+        FilmEntity vadlo = film("Vadló Kilenc", LocalDate.of(2026, 11, 5), 118,
+                "dráma", "Egyesült Királyság / USA", "Fórum Hungary", "Searchlight Pictures",
+                "John Malkovich", "Martin McDonagh", "Hegedűs D. Géza", "vadlo-kilenc.svg",
+                "Martin McDonagh (Három óriásplakát Ebbing határában, A sziget szellemei) fekete humorral "
+                        + "átszőtt drámája titkosügynökökről, akiknek egy régi bevetés következményeivel "
+                        + "kell szembenézniük.");
+        FilmEntity kivansag = film("Még egy kívánság", LocalDate.of(2026, 10, 15), 105,
+                "romantikus", "Magyarország", "Vertigo Média", "Megafilm Service",
+                "Hermányi Mariann", "Dobó Kata", null, "meg-egy-kivansag.svg",
+                "Dobó Kata romantikus vígjátéka a szerelemről, a második esélyekről és arról, mennyi "
+                        + "bátorság kell egy újabb kívánsághoz. A főszerepekben Hermányi Mariann és "
+                        + "Kádár L. Gellért.");
+        FilmEntity moulin = film("Moulin", LocalDate.of(2026, 11, 5), 130,
+                "történelmi", "Franciaország", "Mozinet", "Montmartre Films / TF1 Studio",
+                "Gilles Lellouche", "Nemes László", null, "moulin.svg",
+                "Nemes László első francia nyelvű filmje Jean Moulinnak, a francia ellenállás vezetőjének "
+                        + "utolsó napjait mutatja be, miután 1943-ban a Gestapo fogságába esik. "
+                        + "A 2026-os cannes-i fesztivál versenyfilmje, eredeti nyelven, magyar felirattal.");
 
+        LocalDate ma = LocalDate.now(clock);
         for (int nap = 0; nap < 3; nap++) {
             LocalDate datum = ma.plusDays(nap);
-            vetites(f1, nagy, datum, LocalTime.of(14, 0), true, teljes);
-            vetites(f1, nagy, datum, LocalTime.of(18, 0), false, teljes);
-            vetites(f2, kek, datum, LocalTime.of(16, 30), false, teljes);
-            vetites(f2, kek, datum, LocalTime.of(20, 15), false, teljes);
-            vetites(f3, kamara, datum, LocalTime.of(19, 0), true, teljes);
-            vetites(f3, kamara, datum, LocalTime.of(21, 45), true, teljes);
+            napiMusor(nagy, datum, LocalTime.of(10, 0), teljes,
+                    kalapos, ebenezer, agyagpofa, residentEvil, ebenezer);
+            napiMusor(kek, datum, LocalTime.of(10, 30), teljes,
+                    hogyan2, kivansag, kalapos, hogyan2, vadlo);
+            napiMusor(kamara, datum, LocalTime.of(11, 0), teljes,
+                    orokseg, moulin, vadlo, orokseg, residentEvil);
         }
         log.info("Bemutató adatok betöltve (demo@mozi.hu / demo1234).");
     }
@@ -97,30 +157,55 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         return teremRepository.save(t);
     }
 
-    private FilmEntity film(String cim, LocalDate bemutato, int hossz, String mufaj, String orszag) {
+    private FilmEntity film(String cim, LocalDate bemutato, int hossz, String mufaj, String orszag,
+                            String forgalmazo, String gyartoCeg, String foszereplo, String rendezo,
+                            String foszinkronszinesz, String kep, String leiras) {
         FilmEntity f = new FilmEntity();
         f.setCim(cim);
         f.setBemutatoDatum(bemutato);
         f.setHosszPerc(hossz);
         f.setMufaj(mufaj);
         f.setGyartoOrszag(orszag);
-        f.setForgalmazo("Minta Forgalmazó Kft.");
-        f.setGyartoCeg("Minta Filmstúdió");
-        f.setFoszereplo("Minta Színész");
-        f.setRendezo("Minta Rendező");
+        f.setForgalmazo(forgalmazo);
+        f.setGyartoCeg(gyartoCeg);
+        f.setFoszereplo(foszereplo);
+        f.setRendezo(rendezo);
+        f.setFoszinkronszinesz(foszinkronszinesz);
+        f.setKepUrl(KEPEK + kep);
+        f.setLeiras(leiras);
         return filmRepository.save(f);
     }
 
+    /**
+     * Egy terem egynapos műsora: a filmek egymás után következnek, két előadás között takarítással,
+     * a kezdések negyedórára kerekítve. Ami már nem fér bele a napba, az kimarad.
+     */
+    private void napiMusor(TeremEntity terem, LocalDate datum, LocalTime elso, JegyEntity jegy,
+                           FilmEntity... filmek) {
+        int kezdes = elso.toSecondOfDay() / 60;
+        for (FilmEntity film : filmek) {
+            int vege = kezdes + REKLAM_PERC + film.getHosszPerc();
+            if (vege > UTOLSO_BEFEJEZES_PERC) {
+                return;
+            }
+            vetites(film, terem, datum, LocalTime.of(kezdes / 60, kezdes % 60),
+                    LocalTime.of(vege / 60, vege % 60), jegy);
+            int kovetkezo = vege + TAKARITAS_PERC;
+            kezdes = (kovetkezo + 14) / 15 * 15;
+        }
+    }
+
     private void vetites(FilmEntity film, TeremEntity terem, LocalDate datum, LocalTime kezdes,
-                         boolean eredetiNyelvu, JegyEntity jegy) {
+                         LocalTime befejezes, JegyEntity jegy) {
         NapiBeosztasEntity b = new NapiBeosztasEntity();
         b.setFilm(film);
         b.setTerem(terem);
         b.setDatum(datum);
         b.setKezdes(kezdes);
-        LocalTime vege = kezdes.plusMinutes(film.getHosszPerc() + 15L);
-        b.setBefejezes(vege.isBefore(kezdes) ? LocalTime.of(23, 59) : vege);
-        b.setEredetiNyelvu(eredetiNyelvu);
+        b.setBefejezes(befejezes);
+        // Szinkron nélküli (magyar vagy feliratos) film mindig eredeti nyelvű; a szinkronos filmek
+        // esti előadásai eredeti nyelven, felirattal mennek.
+        b.setEredetiNyelvu(film.getFoszinkronszinesz() == null || !kezdes.isBefore(ESTI_EREDETI_NYELVU));
         b.setJegy(jegy);
         beosztasRepository.save(b);
     }

@@ -6,6 +6,7 @@ import hu.unideb.inf.mozikezelo.service.dto.FelhasznaloLoginRequest;
 import hu.unideb.inf.mozikezelo.service.dto.FelhasznaloResponse;
 import hu.unideb.inf.mozikezelo.service.dto.TokenResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/bejelentkezes")
-    public TokenResponse bejelentkezes(@Valid @RequestBody FelhasznaloLoginRequest dto) {
-        return auth.bejelentkezes(dto);
+    public TokenResponse bejelentkezes(@Valid @RequestBody FelhasznaloLoginRequest dto, HttpServletRequest request) {
+        // A közvetlen kliens címe; az X-Forwarded-For fejlécet szándékosan nem használjuk, mert hamisítható.
+        return auth.bejelentkezes(dto, request.getRemoteAddr());
     }
 }

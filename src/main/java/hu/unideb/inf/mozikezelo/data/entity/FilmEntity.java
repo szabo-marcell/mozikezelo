@@ -20,8 +20,7 @@ public class FilmEntity extends AuditEntity {
 
     @Column(nullable = false, length = 200)
     private String cim;
-
-    // Mikor került a mozikba.
+    
     @Column(name = "bemutato_datum", nullable = false)
     private LocalDate bemutatoDatum;
 
@@ -46,4 +45,15 @@ public class FilmEntity extends AuditEntity {
 
     @Column(nullable = false, length = 100)
     private String rendezo;
+
+    // A főszereplő magyar hangja. Eredetileg is magyar nyelvű filmnél üres.
+    @Column(length = 100)
+    private String foszinkronszinesz;
+
+    @Column(length = 2000)
+    private String leiras;
+
+    // A plakát elérési útja az alkalmazáson belül (pl. /img/filmek/ebenezer.svg).
+    @Column(name = "kep_url", length = 300)
+    private String kepUrl;
 }

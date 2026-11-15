@@ -2,6 +2,7 @@ package hu.unideb.inf.mozikezelo.controller.error;
 
 import hu.unideb.inf.mozikezelo.service.exception.FoglaltFelhasznaloAdatException;
 import hu.unideb.inf.mozikezelo.service.exception.HibasKeresException;
+import hu.unideb.inf.mozikezelo.service.exception.TulSokProbalkozasException;
 import hu.unideb.inf.mozikezelo.service.exception.ErforrasNotFoundException;
 import hu.unideb.inf.mozikezelo.service.exception.UzletiSzabalyException;
 import jakarta.validation.ConstraintViolationException;
@@ -88,6 +89,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         // Rossz jelszó és nem létező felhasználó ugyanazt a választ kapja, hogy ne lehessen felhasználóneveket kipuhatolni.
         return problem(HttpStatus.UNAUTHORIZED, "hibas-bejelentkezes", "Sikertelen bejelentkezés",
                 "Hibás felhasználónév vagy jelszó.");
+    }
+
+    @ExceptionHandler(TulSokProbalkozasException.class)
+    public ResponseEntity<ProblemDetail> handleTooManyAttempts(TulSokProbalkozasException exception) {
+        long perc = (exception.getVarakozasMasodperc() + 59) / 60;
+        ProblemDetail problem = problem(HttpStatus.TOO_MANY_REQUESTS, "tul-sok-probalkozas",
+                "Túl sok próbálkozás",
+                "Túl sok sikertelen bejelentkezési kísérlet. Próbáld újra " + perc + " perc múlva.");
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(exception.getVarakozasMasodperc()))
+                .body(problem);
     }
 
     @ExceptionHandler(HibasKeresException.class)

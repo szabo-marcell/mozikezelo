@@ -12,6 +12,9 @@ public record FilmResponse(
         String forgalmazo,
         String gyartoCeg,
         String foszereplo,
-        String rendezo
+        String rendezo,
+        String foszinkronszinesz,
+        String leiras,
+        String kepUrl
 ) {
 }

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final BejelentkezesVedelem bejelentkezesVedelem;
 
     @Override
     @Transactional
@@ -55,10 +57,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public TokenResponse bejelentkezes(FelhasznaloLoginRequest dto) {
-        // Hibás adatoknál AuthenticationException, amit a hibakezelő 401-re fordít.
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(normalizalEmail(dto.email()), dto.jelszo()));
+    public TokenResponse bejelentkezes(FelhasznaloLoginRequest dto, String ip) {
+        String email = normalizalEmail(dto.email());
+        String kliensIp = ip == null ? "ismeretlen" : ip;
+        // Zárolt fiók vagy IP-cím esetén 429, még a jelszó ellenőrzése előtt.
+        bejelentkezesVedelem.ellenoriz(email, kliensIp);
+        Authentication auth;
+        try {
+            // Hibás adatoknál AuthenticationException, amit a hibakezelő 401-re fordít.
+            auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, dto.jelszo()));
+        } catch (AuthenticationException e) {
+            bejelentkezesVedelem.sikertelen(email, kliensIp);
+            throw e;
+        }
+        bejelentkezesVedelem.sikeres(email);
         String token = tokenService.generateToken((UserDetails) auth.getPrincipal());
         return new TokenResponse(token, "Bearer", tokenService.getLejaratMasodperc());
     }

@@ -34,10 +34,10 @@ Authorization: Bearer {{token}}
 GET {{host}}/api/mozi
 
 ### Film pontos cím szerint
-GET {{host}}/api/filmek?cim=Nyári zápor
+GET {{host}}/api/filmek?cim=Ebenezer
 
 ### Film bemutató dátum szerint
-GET {{host}}/api/filmek?bemutatoDatum=2026-11-07
+GET {{host}}/api/filmek?bemutatoDatum=2026-11-12
 
 ### Terem azonosító szerint
 GET {{host}}/api/termek/1
@@ -67,9 +67,9 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "filmCim": "A csillagok őrzője",
+  "filmCim": "Ebenezer",
   "datum": "{{datum}}",
-  "kezdes": "18:00",
+  "kezdes": "12:30",
   "jegyNev": "Teljes árú",
   "szekSzam": 40
 }
@@ -88,9 +88,9 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "filmCim": "A csillagok őrzője",
+  "filmCim": "Ebenezer",
   "datum": "{{datum}}",
-  "kezdes": "18:00",
+  "kezdes": "12:30",
   "jegyNev": "Teljes árú",
   "szekSzam": 40
 }
