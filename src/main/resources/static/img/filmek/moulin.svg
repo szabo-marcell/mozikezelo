@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450" role="img" aria-label="MOULIN plakát">
+<defs><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a8f86"/><stop offset="1" stop-color="#141512"/></linearGradient></defs>
+<rect width="300" height="450" fill="url(#h)"/>
+<g fill="none" stroke="#e8e2d0" stroke-width="12" opacity=".8"><path d="M150 100 V 260 M 115 140 H 185 M 120 200 H 180"/></g>
+<rect y="290" width="300" height="160" fill="#000" opacity=".35"/>
+<text x="150" y="330" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#fff">MOULIN</text>
+<text x="150" y="425" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff" opacity=".85">GILLES LELLOUCHE · történelmi</text>
+</svg>

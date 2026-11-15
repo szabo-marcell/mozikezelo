@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450" role="img" aria-label="KALAPOS MACSKA plakát">
+<defs><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8413c"/><stop offset="1" stop-color="#1d3b8f"/></linearGradient></defs>
+<rect width="300" height="450" fill="url(#h)"/>
+<g><rect x="105" y="90" width="90" height="25" fill="#fff"/><rect x="105" y="115" width="90" height="25" fill="#e8413c"/><rect x="105" y="140" width="90" height="25" fill="#fff"/><rect x="105" y="165" width="90" height="25" fill="#e8413c"/><rect x="105" y="190" width="90" height="25" fill="#fff"/><ellipse cx="150" cy="222" rx="80" ry="14" fill="#fff"/></g>
+<rect y="290" width="300" height="160" fill="#000" opacity=".35"/>
+<text x="150" y="330" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#fff">KALAPOS</text><text x="150" y="370" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#fff">MACSKA</text>
+<text x="150" y="425" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff" opacity=".85">BILL HADER · családi</text>
+</svg>

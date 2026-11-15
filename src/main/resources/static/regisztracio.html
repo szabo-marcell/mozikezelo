@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dynamic Cinema – Regisztráció</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+    <h1>Regisztráció</h1>
+    <p class="alcim">Már van fiókod? <a href="bejelentkezes.html">Jelentkezz be.</a></p>
+
+    <p id="uzenet" class="uzenet"></p>
+
+    <form id="regisztracio" class="urlap">
+        <div class="mezo">
+            <label for="nev">Név</label>
+            <input id="nev" name="nev" type="text" maxlength="100" required autocomplete="name">
+        </div>
+        <div class="mezo">
+            <label for="email">E-mail cím</label>
+            <input id="email" name="email" type="email" maxlength="254" required autocomplete="email">
+        </div>
+        <div class="mezo">
+            <label for="jelszo">Jelszó</label>
+            <input id="jelszo" name="jelszo" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+            <small>Legalább 8 karakter.</small>
+        </div>
+        <div class="mezo">
+            <label for="jelszo2">Jelszó még egyszer</label>
+            <input id="jelszo2" name="jelszo2" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+        </div>
+        <div class="mezo">
+            <label for="szuletesiDatum">Születési dátum</label>
+            <input id="szuletesiDatum" name="szuletesiDatum" type="date" required>
+            <small>A kedvezményes jegyek (gyerek, diák, nyugdíjas) az életkor alapján igényelhetők.</small>
+        </div>
+        <button class="gomb" type="submit">Regisztráció</button>
+    </form>
+</main>
+<script src="js/app.js"></script>
+<script src="js/regisztracio.js"></script>
+</body>
+</html>

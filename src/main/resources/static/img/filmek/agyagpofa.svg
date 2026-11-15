@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450" role="img" aria-label="AGYAGPOFA plakát">
+<defs><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a0714f"/><stop offset="1" stop-color="#1e120b"/></linearGradient></defs>
+<rect width="300" height="450" fill="url(#h)"/>
+<path d="M150 100 C 210 100 220 170 205 215 C 195 245 175 262 150 262 C 125 262 105 245 95 215 C 80 170 90 100 150 100 Z" fill="#c58e64"/><path d="M118 175 q12 -10 24 0 M158 175 q12 -10 24 0" stroke="#3a2416" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M130 225 q20 14 40 -2" stroke="#3a2416" stroke-width="4" fill="none"/><path d="M200 200 q14 30 4 60" stroke="#c58e64" stroke-width="10" fill="none" stroke-linecap="round"/>
+<rect y="290" width="300" height="160" fill="#000" opacity=".35"/>
+<text x="150" y="330" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#fff">AGYAGPOFA</text>
+<text x="150" y="425" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff" opacity=".85">TOM RHYS-HARRIES · testhorror</text>
+</svg>

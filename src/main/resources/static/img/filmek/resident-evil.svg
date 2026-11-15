@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450" role="img" aria-label="RESIDENT EVIL plakát">
+<defs><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c3122f"/><stop offset="1" stop-color="#14060a"/></linearGradient></defs>
+<rect width="300" height="450" fill="url(#h)"/>
+<g transform="translate(150 180)"><path d="M0 0 L0 -80 A80 80 0 0 1 69 -40 Z" fill="#fff"/><path d="M0 0 L69 -40 A80 80 0 0 1 69 40 Z" fill="#c3122f"/><path d="M0 0 L69 40 A80 80 0 0 1 0 80 Z" fill="#fff"/><path d="M0 0 L0 80 A80 80 0 0 1 -69 40 Z" fill="#c3122f"/><path d="M0 0 L-69 40 A80 80 0 0 1 -69 -40 Z" fill="#fff"/><path d="M0 0 L-69 -40 A80 80 0 0 1 0 -80 Z" fill="#c3122f"/></g>
+<rect y="290" width="300" height="160" fill="#000" opacity=".35"/>
+<text x="150" y="330" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#fff">RESIDENT</text><text x="150" y="370" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#fff">EVIL</text>
+<text x="150" y="425" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff" opacity=".85">AUSTIN ABRAMS · horror</text>
+</svg>

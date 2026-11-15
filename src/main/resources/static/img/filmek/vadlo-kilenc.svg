@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450" role="img" aria-label="VADLÓ KILENC plakát">
+<defs><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9a441"/><stop offset="1" stop-color="#2a1a0c"/></linearGradient></defs>
+<rect width="300" height="450" fill="url(#h)"/>
+<text x="150" y="250" font-family="Georgia, serif" font-size="190" font-weight="700" text-anchor="middle" fill="#fff" opacity=".18">9</text><path d="M80 230 q30 -70 70 -80 q10 -30 40 -30 l10 20 q-20 10 -20 30 q40 30 30 60" stroke="#f3e2c0" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect y="290" width="300" height="160" fill="#000" opacity=".35"/>
+<text x="150" y="330" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#fff">VADLÓ</text><text x="150" y="370" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#fff">KILENC</text>
+<text x="150" y="425" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff" opacity=".85">JOHN MALKOVICH · dráma</text>
+</svg>

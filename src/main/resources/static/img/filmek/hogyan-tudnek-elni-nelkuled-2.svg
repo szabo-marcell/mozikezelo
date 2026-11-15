@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450" role="img" aria-label="HOGYAN TUDNÉK ÉLNI NÉLKÜLED? 2. plakát">
+<defs><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a9c"/><stop offset="1" stop-color="#5b1a3a"/></linearGradient></defs>
+<rect width="300" height="450" fill="url(#h)"/>
+<path d="M150 250 C 90 200 70 160 100 135 C 125 115 145 130 150 145 C 155 130 175 115 200 135 C 230 160 210 200 150 250 Z" fill="#fff" opacity=".85"/>
+<rect y="290" width="300" height="160" fill="#000" opacity=".35"/>
+<text x="150" y="330" font-family="Arial Black, Arial, sans-serif" font-size="26" font-weight="900" text-anchor="middle" fill="#fff">HOGYAN TUDNÉK</text><text x="150" y="362" font-family="Arial Black, Arial, sans-serif" font-size="26" font-weight="900" text-anchor="middle" fill="#fff">ÉLNI NÉLKÜLED?</text><text x="150" y="394" font-family="Arial Black, Arial, sans-serif" font-size="26" font-weight="900" text-anchor="middle" fill="#fff">2.</text>
+<text x="150" y="425" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff" opacity=".85">TÖRŐCSIK FRANCISKA · romantikus</text>
+</svg>

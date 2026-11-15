@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dynamic Cinema – Helyfoglalás</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+    <h1>Helyfoglalás</h1>
+    <p class="alcim" id="alcim">Add meg a vetítés adatait, válassz jegytípust és széket, majd fizess.</p>
+
+    <p id="uzenet" class="uzenet"></p>
+
+    <!-- 1. lépés: foglalási űrlap -->
+    <form id="foglalas" class="urlap szeles" novalidate>
+        <div class="mezo">
+            <label for="filmCim">Film</label>
+            <input id="filmCim" name="filmCim" type="text" maxlength="200" list="filmlista" required>
+            <datalist id="filmlista"></datalist>
+        </div>
+        <div class="ket-oszlop">
+            <div class="mezo">
+                <label for="datum">Dátum</label>
+                <input id="datum" name="datum" type="date" required>
+            </div>
+            <div class="mezo">
+                <label for="kezdes">Kezdés</label>
+                <input id="kezdes" name="kezdes" type="time" required>
+            </div>
+        </div>
+        <div class="mezo">
+            <label for="teremNev">Terem</label>
+            <input id="teremNev" name="teremNev" type="text" maxlength="100" list="teremlista">
+            <datalist id="teremlista"></datalist>
+            <small id="terem-tipp">Csak akkor kötelező, ha a film ugyanabban az időpontban több teremben is megy.</small>
+        </div>
+        <div class="ket-oszlop">
+            <div class="mezo">
+                <label for="jegyNev">Jegytípus</label>
+                <select id="jegyNev" name="jegyNev" required>
+                    <option value="">– Válassz jegytípust –</option>
+                </select>
+                <small id="jegy-feltetel"></small>
+            </div>
+            <div class="mezo">
+                <label for="szekSzam">Szék</label>
+                <!-- Kiválasztott előadásnál select (csak a szabad székek), egyébként szám mező. -->
+                <input id="szekSzam" name="szekSzam" type="number" min="1" step="1" required>
+            </div>
+        </div>
+        <div class="gombsor">
+            <button class="gomb" type="submit">Tovább a fizetéshez</button>
+            <a class="gomb masodlagos" id="vissza-link" href="beosztas.html">Vissza a napi beosztáshoz</a>
+        </div>
+    </form>
+
+    <!-- 2. lépés: fizetés (szimulált – nincs banki adat) -->
+    <section id="fizetes" class="osszesito" hidden>
+        <h2>Fizetés</h2>
+        <div id="osszesito"></div>
+        <div class="osszeg"><span>Fizetendő</span><strong id="osszeg"></strong></div>
+        <div class="gombsor terkoz-felul">
+            <button class="gomb" type="button" id="fizet">Fizetés</button>
+            <button class="gomb masodlagos" type="button" id="modosit">Adatok módosítása</button>
+        </div>
+    </section>
+
+    <!-- 3. lépés: visszaigazolás -->
+    <section id="kesz" class="osszesito" hidden>
+        <h2>Sikeres foglalás – a jegy kifizetve</h2>
+        <p class="tipp">Foglalási kód (ezzel tudod visszamondani a foglalást):</p>
+        <p class="foglalas-kod" id="kod"></p>
+        <div id="visszaigazolas"></div>
+        <div class="gombsor terkoz-felul">
+            <a class="gomb" href="beosztas.html">Vissza a napi beosztáshoz</a>
+            <a class="gomb masodlagos" href="foglalas.html">Új foglalás</a>
+        </div>
+    </section>
+</main>
+<script src="js/app.js"></script>
+<script src="js/foglalas.js"></script>
+</body>
+</html>

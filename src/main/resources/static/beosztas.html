@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dynamic Cinema – Napi beosztás</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+    <h1>Napi beosztás</h1>
+    <p class="alcim">Kattints egy vetítésre a helyfoglaláshoz – a film, az időpont és a terem már ki lesz töltve.</p>
+
+    <form class="napvalaszto" id="napvalaszto">
+        <label for="nap"><strong>Nap:</strong></label>
+        <select id="nap" name="datum"></select>
+    </form>
+
+    <p id="uzenet" class="uzenet"></p>
+    <div id="vetitesek" class="lista"></div>
+</main>
+<script src="js/app.js"></script>
+<script src="js/beosztas.js"></script>
+</body>
+</html>

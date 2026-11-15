@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450" role="img" aria-label="EBENEZER plakát">
+<defs><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3c6e8f"/><stop offset="1" stop-color="#0b1626"/></linearGradient></defs>
+<rect width="300" height="450" fill="url(#h)"/>
+<g fill="#fff" opacity=".8"><circle cx="60" cy="90" r="3"/><circle cx="230" cy="70" r="4"/><circle cx="120" cy="150" r="2.5"/><circle cx="250" cy="180" r="3"/><circle cx="40" cy="210" r="4"/><circle cx="180" cy="120" r="2"/><circle cx="90" cy="60" r="2"/></g><path d="M110 260 L110 170 Q150 120 190 170 L190 260 Z" fill="#000" opacity=".55"/><rect x="138" y="190" width="24" height="30" fill="#ffd27a" opacity=".9"/>
+<rect y="290" width="300" height="160" fill="#000" opacity=".35"/>
+<text x="150" y="330" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#fff">EBENEZER</text>
+<text x="150" y="425" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#fff" opacity=".85">JOHNNY DEPP · családi</text>
+</svg>
