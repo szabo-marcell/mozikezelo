@@ -61,6 +61,8 @@
         <h2>Fizetés</h2>
         <div id="osszesito"></div>
         <div class="osszeg"><span>Fizetendő</span><strong id="osszeg"></strong></div>
+        <p class="tipp">A rendelésed elmentettük a <a href="felbehagyott.html">Félbehagyott rendeléseim</a> közé:
+            ha most nem fizetsz, később onnan folytathatod.</p>
         <div class="gombsor terkoz-felul">
             <button class="gomb" type="button" id="fizet">Fizetés</button>
             <button class="gomb masodlagos" type="button" id="modosit">Adatok módosítása</button>
@@ -73,8 +75,10 @@
         <p class="tipp">Foglalási kód (ezzel tudod visszamondani a foglalást):</p>
         <p class="foglalas-kod" id="kod"></p>
         <div id="visszaigazolas"></div>
+        <p class="tipp">A jegyedet a <a href="jegyeim.html">Jegyeim</a> fül alatt bármikor megnézheted.</p>
         <div class="gombsor terkoz-felul">
-            <a class="gomb" href="beosztas.html">Vissza a napi beosztáshoz</a>
+            <a class="gomb" id="jegy-link" href="jegyeim.html">Jegy megtekintése</a>
+            <a class="gomb masodlagos" href="beosztas.html">Vissza a napi beosztáshoz</a>
             <a class="gomb masodlagos" href="foglalas.html">Új foglalás</a>
         </div>
     </section>

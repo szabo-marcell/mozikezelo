@@ -78,6 +78,10 @@ function fejlec(aktiv) {
         ["beosztas.html", "Napi beosztás"],
         ["foglalas.html", "Helyfoglalás"],
     ];
+    // A saját jegyek és a félbehagyott rendelések csak bejelentkezve látszanak.
+    if (bejelentkezve()) {
+        menupontok.push(["jegyeim.html", "Jegyeim"], ["felbehagyott.html", "Félbehagyott rendeléseim"]);
+    }
     const header = document.createElement("header");
     header.className = "fejlec";
     const belso = elem("div", "fejlec-belso");
@@ -146,6 +150,16 @@ function szepDatum(iso) {
     const [e, h, n] = iso.split("-").map(Number);
     return new Date(e, h - 1, n).toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
 }
+
+/** Bejelentkezés nélkül a bejelentkezési oldalra irányít, majd onnan vissza ide. Igazat ad, ha be van jelentkezve. */
+function bejelentkezesSzukseges() {
+    if (bejelentkezve()) return true;
+    const oldal = location.pathname.split("/").pop() || "index.html";
+    location.replace("bejelentkezes.html?vissza=" + encodeURIComponent(oldal + location.search));
+    return false;
+}
+
+const vetitesNyelv = eredeti => (eredeti ? "Eredeti nyelvű (feliratos)" : "Szinkronizált");
 
 function parameter(nev) {
     return new URLSearchParams(location.search).get(nev);

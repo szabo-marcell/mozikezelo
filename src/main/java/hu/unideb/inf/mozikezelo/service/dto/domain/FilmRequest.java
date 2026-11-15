@@ -24,6 +24,8 @@ public record FilmRequest(
         @Size(max = 2000) String leiras,
         // A CSP csak saját forrásból enged képet, ezért csak alkalmazáson belüli útvonal adható meg.
         @Size(max = 300) @Pattern(regexp = "^/[^/].*", message = "a kép útvonala /-rel kezdődjön (pl. /img/filmek/film.svg)")
-        String kepUrl
+        String kepUrl,
+        @Size(max = 300) @Pattern(regexp = "^/[^/].*", message = "a logó útvonala /-rel kezdődjön (pl. /img/filmek/film.svg)")
+        String logoUrl
 ) {
 }

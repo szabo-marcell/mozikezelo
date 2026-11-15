@@ -15,6 +15,7 @@ public record FilmResponse(
         String rendezo,
         String foszinkronszinesz,
         String leiras,
-        String kepUrl
+        String kepUrl,
+        String logoUrl
 ) {
 }

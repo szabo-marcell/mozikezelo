@@ -94,3 +94,45 @@ Content-Type: application/json
   "jegyNev": "Teljes árú",
   "szekSzam": 40
 }
+
+### Jegyeim: a kifizetett foglalásokból kiállított mozijegyek
+GET {{host}}/api/jegyfoglalasok/jegyek
+Authorization: Bearer {{token}}
+
+### Egy jegy a foglalási kód alapján
+GET {{host}}/api/jegyfoglalasok/{{foglalasKod}}/jegy
+Authorization: Bearer {{token}}
+
+### Félbehagyott rendeléseim
+GET {{host}}/api/felbehagyott-rendelesek
+Authorization: Bearer {{token}}
+
+### Félbehagyott rendelés mentése ("Tovább a fizetéshez")
+POST {{host}}/api/felbehagyott-rendelesek
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "filmCim": "Ebenezer",
+  "datum": "{{datum}}",
+  "kezdes": "12:30",
+  "jegyNev": "Teljes árú",
+  "szekSzam": 41
+}
+
+### Félbehagyott rendelés módosítása
+PUT {{host}}/api/felbehagyott-rendelesek/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "filmCim": "Ebenezer",
+  "datum": "{{datum}}",
+  "kezdes": "12:30",
+  "jegyNev": "Teljes árú",
+  "szekSzam": 42
+}
+
+### Félbehagyott rendelés törlése
+DELETE {{host}}/api/felbehagyott-rendelesek/1
+Authorization: Bearer {{token}}

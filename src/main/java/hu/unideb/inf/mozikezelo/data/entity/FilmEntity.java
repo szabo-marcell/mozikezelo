@@ -53,7 +53,11 @@ public class FilmEntity extends AuditEntity {
     @Column(length = 2000)
     private String leiras;
 
-    // A plakát elérési útja az alkalmazáson belül (pl. /img/filmek/ebenezer.svg).
+    // A film plakátja az alkalmazáson belül (pl. /img/plakatok/ebenezer.webp).
     @Column(name = "kep_url", length = 300)
     private String kepUrl;
+
+    // Saját készítésű logóplakát (SVG), ez kerül a mozijegy bal felső sarkába.
+    @Column(name = "logo_url", length = 300)
+    private String logoUrl;
 }

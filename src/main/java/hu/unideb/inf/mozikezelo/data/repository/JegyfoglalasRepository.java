@@ -16,6 +16,10 @@ public interface JegyfoglalasRepository extends JpaRepository<JegyfoglalasEntity
     @EntityGraph(attributePaths = {"film", "terem", "jegy", "napiBeosztas"})
     Page<JegyfoglalasEntity> findAllByFelhasznalo_Id(Long felhasznaloId, Pageable pageable);
 
+    // "Jegyeim": a felhasználó összes jegye a film és az előadás adataival együtt.
+    @EntityGraph(attributePaths = {"film", "terem", "jegy", "napiBeosztas", "felhasznalo"})
+    List<JegyfoglalasEntity> findAllByFelhasznalo_IdOrderByNapiBeosztas_DatumAscNapiBeosztas_KezdesAsc(Long felhasznaloId);
+
     @EntityGraph(attributePaths = {"film", "terem", "jegy"})
     Optional<JegyfoglalasEntity> findByIdAndFelhasznalo_Id(Long id, Long felhasznaloId);
 

@@ -36,6 +36,7 @@ class MoziApiTests {
     @Autowired FilmRepository filmRepository;
     @Autowired NapiBeosztasRepository beosztasRepository;
     @Autowired JegyfoglalasRepository foglalasRepository;
+    @Autowired FelbehagyottRendelesRepository felbehagyottRepository;
     @Autowired org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     private final LocalDate holnap = LocalDate.now().plusDays(1);
@@ -44,6 +45,7 @@ class MoziApiTests {
 
     @BeforeEach
     void adatok() {
+        felbehagyottRepository.deleteAll();
         foglalasRepository.deleteAll();
         beosztasRepository.deleteAll();
         filmRepository.deleteAll();
@@ -125,6 +127,75 @@ class MoziApiTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"jegyNev\":\"%s\",\"szekSzam\":%d}".formatted(jegyNev, szek)))
                 .andExpect(status().is(vartStatusz));
+    }
+
+    @Test
+    void felbehagyottRendelesEsJegyeim() throws Exception {
+        String auth = tokenKorral("jegy@example.com", 20);
+        String masik = tokenKorral("masik@example.com", 20);
+        String rendeles = """
+                {"filmCim":"Teszt Film","datum":"%s","kezdes":"18:00","jegyNev":"%s","szekSzam":%d}""";
+
+        // Bejelentkezés nélkül nem érhető el.
+        mvc.perform(get("/api/felbehagyott-rendelesek")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/jegyfoglalasok/jegyek")).andExpect(status().isUnauthorized());
+
+        // "Tovább a fizetéshez": félbehagyott rendelés jön létre; ugyanarra a székre újra mentve nem duplikálódik.
+        String valasz = mvc.perform(post("/api/felbehagyott-rendelesek").header("Authorization", auth)
+                        .contentType(MediaType.APPLICATION_JSON).content(rendeles.formatted(holnap, "Diák", 2)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.filmCim").value("Teszt Film"))
+                .andExpect(jsonPath("$.folytathato").value(true))
+                .andReturn().getResponse().getContentAsString();
+        long id = objectMapper.readTree(valasz).get("id").asLong();
+        mvc.perform(post("/api/felbehagyott-rendelesek").header("Authorization", auth)
+                        .contentType(MediaType.APPLICATION_JSON).content(rendeles.formatted(holnap, "Teljes árú", 2)))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.id").value(id));
+        mvc.perform(get("/api/felbehagyott-rendelesek").header("Authorization", auth))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].jegyNev").value("Teljes árú"));
+
+        // Nem létező szék nem menthető; más felhasználó rendelése nem látható és nem törölhető.
+        mvc.perform(post("/api/felbehagyott-rendelesek").header("Authorization", auth)
+                        .contentType(MediaType.APPLICATION_JSON).content(rendeles.formatted(holnap, "Diák", 9)))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/felbehagyott-rendelesek/" + id).header("Authorization", masik))
+                .andExpect(status().isNotFound());
+        mvc.perform(delete("/api/felbehagyott-rendelesek/" + id).header("Authorization", masik))
+                .andExpect(status().isNotFound());
+
+        // Módosítás másik székre, majd ha a széket más lefoglalja, a rendelés nem folytatható.
+        mvc.perform(put("/api/felbehagyott-rendelesek/" + id).header("Authorization", auth)
+                        .contentType(MediaType.APPLICATION_JSON).content(rendeles.formatted(holnap, "Diák", 3)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.szekSzam").value(3));
+        foglalas(masik, "Diák", 3, 201);
+        mvc.perform(get("/api/felbehagyott-rendelesek/" + id).header("Authorization", auth))
+                .andExpect(jsonPath("$.folytathato").value(false));
+
+        // Másik székre módosítva kifizetjük: a rendelés eltűnik a félbehagyottak közül, és jegy lesz belőle.
+        mvc.perform(put("/api/felbehagyott-rendelesek/" + id).header("Authorization", auth)
+                        .contentType(MediaType.APPLICATION_JSON).content(rendeles.formatted(holnap, "Diák", 1)))
+                .andExpect(status().isOk());
+        foglalas(auth, "Diák", 1, 201);
+        mvc.perform(get("/api/felbehagyott-rendelesek").header("Authorization", auth))
+                .andExpect(jsonPath("$", hasSize(0)));
+
+        String jegyek = mvc.perform(get("/api/jegyfoglalasok/jegyek").header("Authorization", auth))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].filmCim").value("Teszt Film"))
+                .andExpect(jsonPath("$[0].rendezo").value("R"))
+                .andExpect(jsonPath("$[0].teremNev").value("Kamaraterem"))
+                .andExpect(jsonPath("$[0].szekSzam").value(1))
+                .andExpect(jsonPath("$[0].felhasznaloNev").value("Teszt"))
+                .andExpect(jsonPath("$[0].ervenyes").value(true))
+                .andReturn().getResponse().getContentAsString();
+        String kod = objectMapper.readTree(jegyek).get(0).get("foglalasKod").asString();
+        mvc.perform(get("/api/jegyfoglalasok/" + kod + "/jegy").header("Authorization", auth))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.foglalasKod").value(kod));
+        // Más jegye nem kérhető le.
+        mvc.perform(get("/api/jegyfoglalasok/" + kod + "/jegy").header("Authorization", masik))
+                .andExpect(status().isNotFound());
     }
 
     @Test

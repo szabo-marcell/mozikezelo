@@ -27,7 +27,9 @@ import java.time.LocalTime;
 @ConditionalOnProperty(prefix = "app.demo-data", name = "enabled", havingValue = "true")
 public class DemoAdatFeltolto implements CommandLineRunner {
 
-    private static final String KEPEK = "/img/filmek/";
+    // A filmek plakátjai, illetve a saját készítésű logóplakátok (a mozijegyen jelennek meg).
+    private static final String PLAKATOK = "/img/plakatok/";
+    private static final String LOGOK = "/img/filmek/";
     // Reklám + előzetesek a film előtt, illetve takarítás két előadás között (percben).
     private static final int REKLAM_PERC = 15;
     private static final int TAKARITAS_PERC = 15;
@@ -72,55 +74,55 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         // A mozikban jelenleg vetített filmek. Szinkronszínész csak a szinkronizált külföldi filmeknél van.
         FilmEntity hogyan2 = film("Hogyan tudnék élni nélküled? 2.", LocalDate.of(2026, 11, 12), 114,
                 "romantikus", "Magyarország", "InterCom", "IKO Production",
-                "Törőcsik Franciska", "Dyga Zsombor", null, "hogyan-tudnek-elni-nelkuled-2.svg",
+                "Törőcsik Franciska", "Dyga Zsombor", null, "hogyan-tudnek-elni-nelkuled-2.png",
                 "Demjén Ferenc dalaira épülő zenés romantikus vígjáték folytatása. Az első rész szereplőinek "
                         + "élete újabb fordulatot vesz: szerelem, barátság és családi kalamajkák, "
                         + "közösen énekelhető slágerekkel.");
         FilmEntity ebenezer = film("Ebenezer", LocalDate.of(2026, 11, 12), 116,
                 "családi", "USA", "UIP-Duna Film", "Paramount Pictures",
-                "Johnny Depp", "Ti West", "Stohl András", "ebenezer.svg",
+                "Johnny Depp", "Ti West", "Stohl András", "ebenezer.webp",
                 "Charles Dickens Karácsonyi énekének új mozis feldolgozása. A zsugori és magának való "
                         + "Ebenezer Scrooge-ot szenteste éjjelén három szellem látogatja meg, hogy megmutassák "
                         + "neki múltját, jelenét és jövőjét, és talán egy utolsó esélyt is adjanak neki.");
-        FilmEntity agyagpofa = film("Agyagpofa", LocalDate.of(2026, 9, 10), 108,
+        FilmEntity agyagpofa = film("Agyagpofa", LocalDate.of(2026, 10, 22), 108,
                 "testhorror", "USA", "InterCom", "DC Studios",
-                "Tom Rhys-Harries", "James Watkins", "Brasch Bence", "agyagpofa.svg",
+                "Tom Rhys-Harries", "James Watkins", "Brasch Bence", "agyagpofa.webp",
                 "Matt Hagen, a feltörekvő színész karrierje egy brutális támadás után egy csapásra véget ér: "
                         + "eltorzult arcát egy kétes kísérleti kezelés hozza helyre, ám a teste ettől kezdve "
                         + "formálható agyaggá válik. A DC-univerzum sötét, testhorror-elemekkel teli eredettörténete.");
         FilmEntity orokseg = film("Az örökség", LocalDate.of(2026, 10, 22), 90,
                 "thriller", "Magyarország", "Vertigo Média", "Független magyar produkció",
-                "Mucsi Zoltán", "Tasnádi István", null, "az-orokseg.svg",
+                "Mucsi Zoltán", "Tasnádi István", null, "az-orokseg.webp",
                 "Egy özvegy apa a megtakarításait egy nála jóval fiatalabb nőre kezdi költeni, amivel felnőtt "
                         + "gyerekei gyanúját is felkelti, és a családi feszültségből hamarosan bűnügy lesz. "
                         + "Tasnádi István, az Aranyélet vezető írójának első rendezése nyolc év után jutott mozikba.");
         FilmEntity residentEvil = film("Resident Evil", LocalDate.of(2026, 9, 17), 95,
                 "horror", "USA", "InterCom", "Constantin Film / Sony Pictures",
-                "Austin Abrams", "Zach Cregger", "Kerek Dávid", "resident-evil.svg",
+                "Austin Abrams", "Zach Cregger", "Kerek Dávid", "resident-evil.jpg",
                 "A legendás Capcom videojáték-sorozat új mozis feldolgozása a Barbár rendezőjétől. Egy egyszerű "
                         + "futár egyetlen éjszaka alatt kénytelen átvágni a járvány sújtotta Raccoon Cityn, "
                         + "miközben egyre közelebb kerül az Umbrella vállalat sötét titkaihoz.");
         FilmEntity kalapos = film("Kalapos Macska", LocalDate.of(2026, 11, 5), 110,
                 "családi", "USA", "InterCom", "Warner Bros. Pictures Animation",
-                "Bill Hader", "Alessandro Carloni", "Miller Zoltán", "kalapos-macska.svg",
+                "Bill Hader", "Alessandro Carloni", "Miller Zoltán", "kalapos-macska.webp",
                 "Dr. Seuss klasszikus meséjének animációs feldolgozása. Egy esős délutánon két unatkozó "
                         + "testvérhez beállít a csíkos kalapot viselő, kiszámíthatatlan macska, és a ház "
                         + "pillanatok alatt a feje tetejére áll.");
         FilmEntity vadlo = film("Vadló Kilenc", LocalDate.of(2026, 11, 5), 118,
                 "dráma", "Egyesült Királyság / USA", "Fórum Hungary", "Searchlight Pictures",
-                "John Malkovich", "Martin McDonagh", "Hegedűs D. Géza", "vadlo-kilenc.svg",
+                "John Malkovich", "Martin McDonagh", "Hegedűs D. Géza", "vadlo-kilenc.png",
                 "Martin McDonagh (Három óriásplakát Ebbing határában, A sziget szellemei) fekete humorral "
                         + "átszőtt drámája titkosügynökökről, akiknek egy régi bevetés következményeivel "
                         + "kell szembenézniük.");
         FilmEntity kivansag = film("Még egy kívánság", LocalDate.of(2026, 10, 15), 105,
                 "romantikus", "Magyarország", "Vertigo Média", "Megafilm Service",
-                "Hermányi Mariann", "Dobó Kata", null, "meg-egy-kivansag.svg",
+                "Hermányi Mariann", "Dobó Kata", null, "meg-egy-kivansag.webp",
                 "Dobó Kata romantikus vígjátéka a szerelemről, a második esélyekről és arról, mennyi "
                         + "bátorság kell egy újabb kívánsághoz. A főszerepekben Hermányi Mariann és "
                         + "Kádár L. Gellért.");
         FilmEntity moulin = film("Moulin", LocalDate.of(2026, 11, 5), 130,
                 "történelmi", "Franciaország", "Mozinet", "Montmartre Films / TF1 Studio",
-                "Gilles Lellouche", "Nemes László", null, "moulin.svg",
+                "Gilles Lellouche", "Nemes László", null, "moulin.jpg",
                 "Nemes László első francia nyelvű filmje Jean Moulinnak, a francia ellenállás vezetőjének "
                         + "utolsó napjait mutatja be, miután 1943-ban a Gestapo fogságába esik. "
                         + "A 2026-os cannes-i fesztivál versenyfilmje, eredeti nyelven, magyar felirattal.");
@@ -159,7 +161,7 @@ public class DemoAdatFeltolto implements CommandLineRunner {
 
     private FilmEntity film(String cim, LocalDate bemutato, int hossz, String mufaj, String orszag,
                             String forgalmazo, String gyartoCeg, String foszereplo, String rendezo,
-                            String foszinkronszinesz, String kep, String leiras) {
+                            String foszinkronszinesz, String plakat, String leiras) {
         FilmEntity f = new FilmEntity();
         f.setCim(cim);
         f.setBemutatoDatum(bemutato);
@@ -171,7 +173,9 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         f.setFoszereplo(foszereplo);
         f.setRendezo(rendezo);
         f.setFoszinkronszinesz(foszinkronszinesz);
-        f.setKepUrl(KEPEK + kep);
+        f.setKepUrl(PLAKATOK + plakat);
+        // A logó neve megegyezik a plakátéval, csak SVG kiterjesztéssel.
+        f.setLogoUrl(LOGOK + plakat.substring(0, plakat.lastIndexOf('.')) + ".svg");
         f.setLeiras(leiras);
         return filmRepository.save(f);
     }

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dynamic Cinema – Jegyeim</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+    <h1>Jegyeim</h1>
+    <p class="alcim">A kifizetett foglalásaidhoz tartozó mozijegyek. Kattints egy jegyre a teljes képernyős megjelenítéshez.</p>
+
+    <form class="napvalaszto" id="szuro">
+        <label for="nezet"><strong>Jegyek:</strong></label>
+        <select id="nezet" name="nezet">
+            <option value="kozelgo">Közelgő előadások</option>
+            <option value="lejart">Lejárt előadások</option>
+            <option value="osszes">Összes jegy</option>
+        </select>
+    </form>
+
+    <p id="uzenet" class="uzenet"></p>
+    <div id="jegyek" class="lista"></div>
+</main>
+
+<!-- Teljes képernyős jegynézet -->
+<div id="jegy-nezet" class="jegy-nezet" role="dialog" aria-modal="true" aria-label="Mozijegy" hidden>
+    <div class="jegy-nezet-eszkozok">
+        <button class="gomb masodlagos kicsi" type="button" id="bezar">✕ Bezárás</button>
+    </div>
+    <div id="jegy-helye" class="jegy-helye"></div>
+</div>
+<script src="js/app.js"></script>
+<script src="js/jegyeim.js"></script>
+</body>
+</html>

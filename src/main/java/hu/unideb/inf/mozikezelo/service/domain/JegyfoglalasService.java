@@ -4,10 +4,12 @@ import hu.unideb.inf.mozikezelo.data.entity.FelhasznaloEntity;
 import hu.unideb.inf.mozikezelo.data.entity.JegyEntity;
 import hu.unideb.inf.mozikezelo.data.entity.JegyfoglalasEntity;
 import hu.unideb.inf.mozikezelo.data.entity.NapiBeosztasEntity;
+import hu.unideb.inf.mozikezelo.data.repository.FelbehagyottRendelesRepository;
 import hu.unideb.inf.mozikezelo.data.repository.FelhasznaloRepository;
 import hu.unideb.inf.mozikezelo.data.repository.JegyRepository;
 import hu.unideb.inf.mozikezelo.data.repository.JegyfoglalasRepository;
 import hu.unideb.inf.mozikezelo.data.repository.NapiBeosztasRepository;
+import hu.unideb.inf.mozikezelo.service.dto.domain.BelepoJegyResponse;
 import hu.unideb.inf.mozikezelo.service.dto.domain.EloadasFoglalasRequest;
 import hu.unideb.inf.mozikezelo.service.dto.domain.JegyfoglalasRequest;
 import hu.unideb.inf.mozikezelo.service.dto.domain.JegyfoglalasResponse;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,6 +39,7 @@ public class JegyfoglalasService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final JegyfoglalasRepository foglalasok;
+    private final FelbehagyottRendelesRepository felbehagyottak;
     private final NapiBeosztasRepository beosztasok;
     private final JegyRepository jegyek;
     private final FelhasznaloRepository felhasznalok;
@@ -85,22 +89,30 @@ public class JegyfoglalasService {
         lemond(foglalas);
     }
 
+    // "Jegyeim": a felhasználó összes kifizetett jegye, időrendben.
+    public List<BelepoJegyResponse> jegyeim(Long felhasznaloId) {
+        return foglalasok.findAllByFelhasznalo_IdOrderByNapiBeosztas_DatumAscNapiBeosztas_KezdesAsc(felhasznaloId)
+                .stream().map(this::belepoJegy).toList();
+    }
+
+    // Egy saját jegy a foglalási kód alapján (a teljes képernyős jegynézethez).
+    public BelepoJegyResponse jegyKoddal(Long felhasznaloId, String foglalasKod) {
+        return foglalasok.findByFoglalasKod(foglalasKod.strip().toUpperCase(Locale.ROOT))
+                .filter(f -> f.getFelhasznalo().getId().equals(felhasznaloId))
+                .map(this::belepoJegy)
+                .orElseThrow(() -> new ErforrasNotFoundException("Nem található saját jegy ezzel az azonosítóval: " + foglalasKod));
+    }
+
+    private BelepoJegyResponse belepoJegy(JegyfoglalasEntity foglalas) {
+        NapiBeosztasEntity b = foglalas.getNapiBeosztas();
+        boolean ervenyes = LocalDateTime.of(b.getDatum(), b.getBefejezes()).isAfter(LocalDateTime.now(clock));
+        return mapper.belepoJegy(foglalas, ervenyes);
+    }
+
     private JegyfoglalasResponse foglalEloadasra(Long felhasznaloId, NapiBeosztasEntity beosztas, String jegyNev, int szekSzam) {
-        if (NapiBeosztasService.elkezdodott(beosztas, clock)) {
-            throw new UzletiSzabalyException("Már elkezdődött vagy lezajlott előadásra nem lehet jegyet foglalni.");
-        }
-        int ferohely = beosztas.getTerem().getFerohely();
-        if (szekSzam < 1 || szekSzam > ferohely) {
-            throw new HibasKeresException("A szék száma 1 és " + ferohely + " között lehet ebben a teremben.");
-        }
-        FelhasznaloEntity felhasznalo = felhasznalok.findById(felhasznaloId)
-                .orElseThrow(() -> new ErforrasNotFoundException("A felhasználó nem található."));
+        FelhasznaloEntity felhasznalo = felhasznalo(felhasznaloId);
         JegyEntity jegy = jegy(jegyNev);
-        if (!jegyFeltetel.igenyelheto(jegy, felhasznalo.getSzuletesiDatum())) {
-            throw new UzletiSzabalyException("A(z) \"" + jegy.getNev() + "\" jegy nem igényelhető. Feltétel: "
-                    + jegy.getFeltetel() + ". A születési év alapján számolt életkor: "
-                    + jegyFeltetel.kor(felhasznalo.getSzuletesiDatum()) + " év.");
-        }
+        ellenoriz(beosztas, felhasznalo, jegy, szekSzam);
         if (foglalasok.existsByNapiBeosztas_IdAndSzekSzam(beosztas.getId(), szekSzam)) {
             throw new UzletiSzabalyException("A(z) " + szekSzam + ". szék erre az előadásra már foglalt.");
         }
@@ -113,7 +125,34 @@ public class JegyfoglalasService {
         foglalas.setFelhasznalo(felhasznalo);
         foglalas.setSzekSzam(szekSzam);
         // A párhuzamos foglalást az egyedi (előadás, szék) kényszer is kiszűri: 409-es válasz.
-        return mapper.foglalas(foglalasok.saveAndFlush(foglalas));
+        JegyfoglalasResponse valasz = mapper.foglalas(foglalasok.saveAndFlush(foglalas));
+        // A kifizetett rendelés már nem félbehagyott.
+        felbehagyottak.deleteAllByFelhasznalo_IdAndNapiBeosztas_IdAndSzekSzam(felhasznaloId, beosztas.getId(), szekSzam);
+        return valasz;
+    }
+
+    /**
+     * A foglalás és a félbehagyott rendelés közös szabályai: az előadás még nem kezdődött el,
+     * a szék létezik a teremben, és a felhasználó igényelheti a jegytípust.
+     */
+    void ellenoriz(NapiBeosztasEntity beosztas, FelhasznaloEntity felhasznalo, JegyEntity jegy, int szekSzam) {
+        if (NapiBeosztasService.elkezdodott(beosztas, clock)) {
+            throw new UzletiSzabalyException("Már elkezdődött vagy lezajlott előadásra nem lehet jegyet foglalni.");
+        }
+        int ferohely = beosztas.getTerem().getFerohely();
+        if (szekSzam < 1 || szekSzam > ferohely) {
+            throw new HibasKeresException("A szék száma 1 és " + ferohely + " között lehet ebben a teremben.");
+        }
+        if (!jegyFeltetel.igenyelheto(jegy, felhasznalo.getSzuletesiDatum())) {
+            throw new UzletiSzabalyException("A(z) \"" + jegy.getNev() + "\" jegy nem igényelhető. Feltétel: "
+                    + jegy.getFeltetel() + ". A születési év alapján számolt életkor: "
+                    + jegyFeltetel.kor(felhasznalo.getSzuletesiDatum()) + " év.");
+        }
+    }
+
+    FelhasznaloEntity felhasznalo(Long felhasznaloId) {
+        return felhasznalok.findById(felhasznaloId)
+                .orElseThrow(() -> new ErforrasNotFoundException("A felhasználó nem található."));
     }
 
     private void lemond(JegyfoglalasEntity foglalas) {
@@ -123,7 +162,7 @@ public class JegyfoglalasService {
         foglalasok.delete(foglalas);
     }
 
-    private NapiBeosztasEntity eloadasKeresese(JegyfoglalasRequest request) {
+    NapiBeosztasEntity eloadasKeresese(JegyfoglalasRequest request) {
         List<NapiBeosztasEntity> talalatok = beosztasok.findAllByFilm_CimIgnoreCaseAndDatumAndKezdes(
                 request.filmCim().strip(), request.datum(), request.kezdes());
         if (request.teremNev() != null && !request.teremNev().isBlank()) {
@@ -140,7 +179,7 @@ public class JegyfoglalasService {
         return talalatok.getFirst();
     }
 
-    private JegyEntity jegy(String nev) {
+    JegyEntity jegy(String nev) {
         return jegyek.findByNev(nev.strip())
                 .orElseThrow(() -> new ErforrasNotFoundException("Nem található jegytípus: " + nev));
     }

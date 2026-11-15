@@ -5,16 +5,48 @@ const urlap = document.getElementById("foglalas");
 const doboz = document.getElementById("uzenet");
 const fizetesResz = document.getElementById("fizetes");
 const keszResz = document.getElementById("kesz");
-const eloadasId = parameter("eloadas");
+let eloadasId = parameter("eloadas");
+const folytatando = parameter("rendeles");
 
 let jegyek = [];        // választható jegytípusok (név, ár, feltétel)
 let kitoltott = null;   // a beküldött űrlap adatai a fizetési lépéshez
+let rendelesId = null;  // a mentett félbehagyott rendelés azonosítója
 
 // Foglalni csak bejelentkezve lehet.
-if (!bejelentkezve()) {
-    location.replace("bejelentkezes.html?vissza=" + encodeURIComponent("foglalas.html" + location.search));
-} else {
-    (eloadasId ? kivalasztottEloadas(eloadasId) : uresUrlap()).catch(h => uzenet(doboz, h.message));
+if (bejelentkezesSzukseges()) {
+    const indulas = folytatando ? rendelesFolytatasa(folytatando)
+        : eloadasId ? kivalasztottEloadas(eloadasId) : uresUrlap();
+    indulas.catch(h => uzenet(doboz, h.message));
+}
+
+/** "Félbehagyott rendeléseim" → Folytatás: az előadás, a jegytípus és a szék ki van töltve. */
+async function rendelesFolytatasa(id) {
+    const r = await api("/api/felbehagyott-rendelesek/" + encodeURIComponent(id));
+    rendelesId = r.id;
+    eloadasId = String(r.napiBeosztasId);
+    await kivalasztottEloadas(eloadasId);
+    document.getElementById("alcim").textContent =
+        "Félbehagyott rendelésed folytatása – ellenőrizd az adatokat, majd lépj tovább a fizetéshez.";
+    urlap.jegyNev.value = r.jegyNev;
+    urlap.jegyNev.dispatchEvent(new Event("change"));
+    if ([...urlap.szekSzam.options].some(o => o.value === String(r.szekSzam))) {
+        urlap.szekSzam.value = String(r.szekSzam);
+    } else if (r.folytathato === false) {
+        uzenet(doboz, "A korábban választott " + r.szekSzam + ". szék közben elkelt, válassz másikat.", "info");
+    }
+}
+
+/** A "Tovább a fizetéshez" lépésnél félbehagyott rendelésként mentjük az adatokat. */
+async function rendelesMentese(adatok) {
+    const body = { ...adatok, teremNev: adatok.teremNev || null };
+    if (rendelesId) {
+        try {
+            return await api("/api/felbehagyott-rendelesek/" + rendelesId, { method: "PUT", body });
+        } catch {
+            // Ha közben törölték (pl. másik lapon), újként mentjük.
+        }
+    }
+    return api("/api/felbehagyott-rendelesek", { method: "POST", body });
 }
 
 /** Napi beosztásból érkezve: film, dátum, kezdés, terem kitöltve; jegytípus és szék még üres. */
@@ -81,7 +113,7 @@ function szabadSzekek(szabad, ferohely) {
 }
 
 // 1. lépés → 2. lépés
-urlap.addEventListener("submit", e => {
+urlap.addEventListener("submit", async e => {
     e.preventDefault();
     if (!urlap.reportValidity()) return;
     const jegy = jegyek.find(j => j.nev === urlap.jegyNev.value);
@@ -93,6 +125,16 @@ urlap.addEventListener("submit", e => {
         jegyNev: jegy.nev,
         szekSzam: Number(urlap.szekSzam.value),
     };
+    const gomb = urlap.querySelector("button[type=submit]");
+    gomb.disabled = true;
+    try {
+        rendelesId = (await rendelesMentese(kitoltott)).id;
+    } catch (h) {
+        uzenet(doboz, h.message);
+        return;
+    } finally {
+        gomb.disabled = false;
+    }
     const osszesito = document.getElementById("osszesito");
     osszesito.replaceChildren(adatlista([
         ["Film", kitoltott.filmCim],
@@ -146,7 +188,9 @@ document.getElementById("fizet").addEventListener("click", async () => {
 
 // 3. lépés
 function visszaigazolas(f) {
+    rendelesId = null; // a szerver a kifizetett rendelést törölte a félbehagyottak közül
     document.getElementById("kod").textContent = f.foglalasKod;
+    document.getElementById("jegy-link").href = "jegyeim.html?kod=" + encodeURIComponent(f.foglalasKod);
     document.getElementById("visszaigazolas").replaceChildren(adatlista([
         ["Film", f.filmCim],
         ["Időpont", szepDatum(f.datum) + ", " + ido(f.kezdes) + " – " + ido(f.befejezes)],

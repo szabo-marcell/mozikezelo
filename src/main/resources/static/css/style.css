@@ -320,3 +320,175 @@ input[readonly] {
 
 /* Térköz a gombsor fölött (inline style helyett, a CSP miatt). */
 .terkoz-felul { margin-top: 18px; }
+
+/* ---------- Jegyeim és félbehagyott rendelések ---------- */
+.jegy-kartya {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.jegy-kartya-logo {
+    width: 64px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.elhalvanyitott { opacity: .6; }
+.lejart-cimke { color: var(--hiba); border-color: var(--hiba); }
+.nincs-gorgetes { overflow: hidden; }
+
+/* Teljes képernyős jegynézet */
+.jegy-nezet {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    overflow-y: auto;
+    background: rgba(8, 7, 12, .95);
+}
+
+.jegy-nezet[hidden] { display: none; }
+
+.jegy-nezet-eszkozok {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto 12px;
+}
+
+.jegy-helye {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* A mozijegy */
+.mozijegy {
+    --jegy-hatter: #24202f;
+    width: 100%;
+    max-width: 760px;
+    padding: 24px;
+    background: linear-gradient(160deg, #2e2939, var(--jegy-hatter));
+    border: 1px solid var(--kiemelt-sotet);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+    overflow: hidden;
+}
+
+.mozijegy-fej {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 18px;
+    align-items: start;
+}
+
+.mozijegy-logo {
+    width: 110px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .4);
+}
+
+.mozijegy-mozi {
+    margin: 0;
+    color: var(--kiemelt);
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.mozijegy-cim h2 { margin: 4px 0; font-size: 1.9rem; line-height: 1.2; }
+.mozijegy-alcim { margin: 0; color: var(--halvany); }
+
+.mozijegy-allapot {
+    padding: 4px 10px;
+    border: 2px solid var(--siker);
+    border-radius: 6px;
+    color: var(--siker);
+    font-weight: 800;
+    letter-spacing: .06em;
+    transform: rotate(4deg);
+}
+
+.mozijegy-allapot.lejart { border-color: var(--hiba); color: var(--hiba); }
+
+.mozijegy-fo {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 22px 0 6px;
+}
+
+.mozijegy-mezo {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 12px;
+    background: var(--hatter);
+    border: 1px solid var(--keret);
+    border-radius: 8px;
+}
+
+.mozijegy-mezo span { color: var(--halvany); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
+.mozijegy-mezo strong { font-size: 1.1rem; }
+
+/* Tépőszél a jegy két oldalán kivágással */
+.mozijegy-perforacio {
+    position: relative;
+    margin: 22px -24px 18px;
+    border-top: 3px dashed var(--keret);
+}
+
+.mozijegy-perforacio::before,
+.mozijegy-perforacio::after {
+    content: "";
+    position: absolute;
+    top: -14px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgb(8, 7, 12);
+}
+
+.mozijegy-perforacio::before { left: -13px; }
+.mozijegy-perforacio::after { right: -13px; }
+
+.mozijegy-lab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+}
+
+.mozijegy-lab span { color: var(--halvany); font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; }
+.mozijegy-lab small { color: var(--halvany); }
+
+.mozijegy-kod {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 2rem;
+    letter-spacing: .15em;
+    color: var(--kiemelt);
+    overflow-wrap: anywhere;
+}
+
+.lejart-jegy { filter: grayscale(.6); }
+
+@media (max-width: 600px) {
+    .mozijegy { padding: 18px; }
+    .mozijegy-fej { grid-template-columns: auto 1fr; gap: 12px; }
+    .mozijegy-logo { width: 72px; }
+    .mozijegy-cim h2 { font-size: 1.4rem; }
+    .mozijegy-allapot { grid-column: 1 / -1; justify-self: start; transform: none; }
+    .mozijegy-fo { grid-template-columns: repeat(2, 1fr); }
+    .mozijegy-perforacio { margin-left: -18px; margin-right: -18px; }
+    .mozijegy-kod { font-size: 1.5rem; }
+}
