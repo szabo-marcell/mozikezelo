@@ -16,7 +16,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,8 +70,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw e;
         }
         bejelentkezesVedelem.sikeres(email);
-        String token = tokenService.generateToken((UserDetails) auth.getPrincipal());
+        String token = tokenService.generateToken((FelhasznaloEntity) auth.getPrincipal());
         return new TokenResponse(token, "Bearer", tokenService.getLejaratMasodperc());
+    }
+
+    @Override
+    @Transactional
+    public void kijelentkezes(Long felhasznaloId) {
+        frepo.tokenVerzioNovelese(felhasznaloId);
     }
 
     private static String normalizalEmail(String email) {

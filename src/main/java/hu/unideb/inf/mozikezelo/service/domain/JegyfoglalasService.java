@@ -106,7 +106,7 @@ public class JegyfoglalasService {
     private BelepoJegyResponse belepoJegy(JegyfoglalasEntity foglalas) {
         NapiBeosztasEntity b = foglalas.getNapiBeosztas();
         boolean ervenyes = LocalDateTime.of(b.getDatum(), b.getBefejezes()).isAfter(LocalDateTime.now(clock));
-        return mapper.belepoJegy(foglalas, ervenyes);
+        return mapper.belepoJegy(foglalas, ervenyes, !NapiBeosztasService.elkezdodott(b, clock));
     }
 
     private JegyfoglalasResponse foglalEloadasra(Long felhasznaloId, NapiBeosztasEntity beosztas, String jegyNev, int szekSzam) {

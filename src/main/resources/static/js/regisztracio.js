@@ -23,10 +23,10 @@ urlap.addEventListener("submit", async e => {
             },
         });
         // Sikeres regisztráció után azonnal be is jelentkeztetjük.
-        tokenMentese(await api("/auth/bejelentkezes", {
+        await api("/auth/bejelentkezes", {
             method: "POST",
             body: { email: urlap.email.value.trim(), jelszo: urlap.jelszo.value },
-        }));
+        });
         localStorage.setItem(NEV_KULCS, felhasznalo.nev);
         location.href = "beosztas.html";
     } catch (hiba) {

@@ -1,51 +1,89 @@
-// Közös segédfüggvények: token kezelése, REST-hívások, fejléc, formázás.
-// A HTML-űrlapok adatait JSON-ként küldjük a Spring REST API-nak (a JWT tokent az Authorization fejléc viszi).
+// Közös segédfüggvények: bejelentkezési állapot, REST-hívások, fejléc, formázás.
+// A HTML-űrlapok adatait JSON-ként küldjük a Spring REST API-nak.
+// A JWT a szerver által beállított HttpOnly sütiben (MOZI_TOKEN) utazik: JavaScriptből nem olvasható,
+// ezért itt nem is tároljuk. A módosító kérésekhez CSRF-token kell (XSRF-TOKEN süti -> X-XSRF-TOKEN fejléc).
 
-const TOKEN_KULCS = "mozi.token";
-const LEJARAT_KULCS = "mozi.lejarat";
+// Csak a fejléc megjelenítéséhez; a jogosultságot a szerver minden kérésnél ellenőrzi.
 const NEV_KULCS = "mozi.nev";
+const JOG_KULCS = "mozi.jog";
+// Titkot nem tartalmazó jelzősüti, a tokennel együtt jár le.
+const JELZO_SUTI = "MOZI_BEJELENTKEZVE";
+const CSRF_SUTI = "XSRF-TOKEN";
 
-function token() {
-    const lejarat = Number(localStorage.getItem(LEJARAT_KULCS) || 0);
-    if (lejarat && Date.now() > lejarat) {
-        kijelentkezes(false);
-        return null;
-    }
-    return localStorage.getItem(TOKEN_KULCS);
+function suti(nev) {
+    const talalat = document.cookie.split("; ").find(s => s.startsWith(nev + "="));
+    return talalat ? decodeURIComponent(talalat.slice(nev.length + 1)) : null;
+}
+
+function admin() {
+    return bejelentkezve() && localStorage.getItem(JOG_KULCS) === "ADMIN";
 }
 
 function bejelentkezve() {
-    return token() !== null;
+    if (suti(JELZO_SUTI) === "1") return true;
+    // Lejárt vagy visszavont munkamenet: a megjelenítési adatok is mennek.
+    helyiAdatokTorlese();
+    return false;
 }
 
-function tokenMentese(valasz) {
-    localStorage.setItem(TOKEN_KULCS, valasz.token);
-    localStorage.setItem(LEJARAT_KULCS, String(Date.now() + valasz.lejaratMasodperc * 1000));
-}
-
-function kijelentkezes(atiranyit = true) {
-    localStorage.removeItem(TOKEN_KULCS);
-    localStorage.removeItem(LEJARAT_KULCS);
+function helyiAdatokTorlese() {
     localStorage.removeItem(NEV_KULCS);
+    localStorage.removeItem(JOG_KULCS);
+    // Régebbi verzió maradványai: a token már nem a localStorage-ban van.
+    localStorage.removeItem("mozi.token");
+    localStorage.removeItem("mozi.lejarat");
+}
+
+/** Kijelentkezés: a szerver visszavonja a tokeneket és törli a sütiket. */
+async function kijelentkezes(atiranyit = true) {
+    try {
+        await api("/auth/kijelentkezes", { method: "POST" });
+    } catch {
+        // A helyi adatokat akkor is töröljük, ha a szerver nem érhető el.
+    }
+    helyiAdatokTorlese();
     if (atiranyit) location.href = "index.html";
 }
 
+async function csrfToken() {
+    let t = suti(CSRF_SUTI);
+    if (!t) {
+        await fetch("/auth/csrf", { credentials: "same-origin" });
+        t = suti(CSRF_SUTI);
+    }
+    return t;
+}
+
 /** REST-hívás. Hiba esetén a szerver ProblemDetail-üzenetét tartalmazó Error-t dob. */
-async function api(url, { method = "GET", body } = {}) {
+async function api(url, { method = "GET", body } = {}, ujraprobalva = false) {
     const fejlecek = { "Accept": "application/json" };
     if (body !== undefined) fejlecek["Content-Type"] = "application/json";
-    const t = token();
-    if (t) fejlecek["Authorization"] = "Bearer " + t;
+    const modosito = !["GET", "HEAD", "OPTIONS"].includes(method);
+    const voltBejelentkezve = bejelentkezve();
 
     let valasz;
     try {
-        valasz = await fetch(url, { method, headers: fejlecek, body: body === undefined ? undefined : JSON.stringify(body) });
+        if (modosito) {
+            const t = await csrfToken();
+            if (t) fejlecek["X-XSRF-TOKEN"] = t;
+        }
+        valasz = await fetch(url, {
+            method, headers: fejlecek, credentials: "same-origin",
+            body: body === undefined ? undefined : JSON.stringify(body),
+        });
     } catch {
         throw new Error("A szerver nem érhető el.");
     }
 
-    if (valasz.status === 401 && t) {
-        kijelentkezes(false);
+    // Hiányzó vagy elavult CSRF-token (pl. törölt süti): egyszer újrapróbáljuk friss tokennel.
+    // (Valódi jogosultsági hiba esetén az újrapróbálás is 403-at ad, és az jut el a hívóhoz.)
+    if (valasz.status === 403 && modosito && !ujraprobalva) {
+        await fetch("/auth/csrf", { credentials: "same-origin" });
+        return api(url, { method, body }, true);
+    }
+
+    if (valasz.status === 401 && voltBejelentkezve) {
+        helyiAdatokTorlese();
         throw new Error("A munkamenet lejárt, jelentkezz be újra.");
     }
     if (valasz.status === 204) return null;
@@ -82,6 +120,7 @@ function fejlec(aktiv) {
     if (bejelentkezve()) {
         menupontok.push(["jegyeim.html", "Jegyeim"], ["felbehagyott.html", "Félbehagyott rendeléseim"]);
     }
+    if (admin()) menupontok.push(["admin.html", "Filmek kezelése"]);
     const header = document.createElement("header");
     header.className = "fejlec";
     const belso = elem("div", "fejlec-belso");
@@ -110,6 +149,18 @@ function fejlec(aktiv) {
     belso.append(logo, menu, fiok);
     header.append(belso);
     document.body.prepend(header);
+
+    // Korábbi bejelentkezésnél még nincs eltárolva a jog: lekérjük, és adminnak pótoljuk a menüpontot.
+    if (bejelentkezve() && localStorage.getItem(JOG_KULCS) === null) {
+        api("/api/felhasznalo/profil").then(p => {
+            localStorage.setItem(JOG_KULCS, p.jogNev || "");
+            if (admin()) {
+                const a = elem("a", aktiv === "admin.html" ? "aktiv" : "", "Filmek kezelése");
+                a.href = "admin.html";
+                menu.append(a);
+            }
+        }).catch(() => {});
+    }
 }
 
 // ---------- DOM és formázás ----------

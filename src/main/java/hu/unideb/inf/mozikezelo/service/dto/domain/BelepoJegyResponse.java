@@ -33,6 +33,8 @@ public record BelepoJegyResponse(
         int szekSzam,
         String felhasznaloNev,
         Instant foglalva,
-        boolean ervenyes
+        boolean ervenyes,
+        // Igaz, amíg az előadás el nem kezdődött: addig a jegy visszamondható.
+        boolean lemondhato
 ) {
 }

@@ -18,7 +18,7 @@ public class FelhasznaloController {
 
     private final FelhasznaloService service;
 
-    // A bejelentkezett felhasználó (JWT token) saját profilja.
+
     @GetMapping("/profil")
     public FelhasznaloResponse profil(@AuthenticationPrincipal FelhasznaloEntity felhasznalo) {
         return service.profil(felhasznalo.getId());

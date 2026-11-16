@@ -37,6 +37,10 @@ public class FelhasznaloEntity
     @Column(name = "szulDat", nullable = false)
     private LocalDate szuletesiDatum;
 
+    // A JWT-k "ver" claimje ehhez igazodik: növelésekor (pl. kijelentkezéskor) a korábban kiadott tokenek érvénytelenné válnak.
+    @Column(name = "token_verzio", nullable = false)
+    private int tokenVerzio;
+
     // FELHASZNALO N:1 JOG
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jogosultsag_id")

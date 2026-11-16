@@ -1,16 +1,23 @@
 package hu.unideb.inf.mozikezelo;
 
+import hu.unideb.inf.mozikezelo.config.AuthSutik;
 import hu.unideb.inf.mozikezelo.data.entity.*;
 import hu.unideb.inf.mozikezelo.data.entity.enums.JegyTipus;
 import hu.unideb.inf.mozikezelo.data.entity.enums.VetitesTipus;
 import hu.unideb.inf.mozikezelo.data.repository.*;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Value;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
@@ -38,6 +45,8 @@ class MoziApiTests {
     @Autowired JegyfoglalasRepository foglalasRepository;
     @Autowired FelbehagyottRendelesRepository felbehagyottRepository;
     @Autowired org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @Value("${app.jwt.secret}") String jwtSecret;
 
     private final LocalDate holnap = LocalDate.now().plusDays(1);
     private Long beosztasId;
@@ -115,11 +124,21 @@ class MoziApiTests {
         mvc.perform(post("/auth/regisztracio").contentType(MediaType.APPLICATION_JSON).content("""
                         {"nev":"Teszt","email":"%s","jelszo":"titkos123","szuletesiDatum":"%s"}""".formatted(email, szul)))
                 .andExpect(status().isCreated());
-        return "Bearer " + objectMapper.readTree(mvc.perform(post("/auth/bejelentkezes")
+        return belep(email, "titkos123");
+    }
+
+    // Bejelentkezés; a token a HttpOnly sütiből jön (a válasz törzsében nincs), a tesztek Bearer-fejlécben küldik.
+    private String belep(String email, String jelszo) throws Exception {
+        MockHttpServletResponse valasz = mvc.perform(post("/auth/bejelentkezes")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"%s\",\"jelszo\":\"titkos123\"}".formatted(email)))
+                        .content("{\"email\":\"%s\",\"jelszo\":\"%s\"}".formatted(email, jelszo)))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString()).get("token").asString();
+                .andExpect(jsonPath("$.token").doesNotExist())
+                .andExpect(cookie().httpOnly(AuthSutik.TOKEN_SUTI, true))
+                .andExpect(cookie().sameSite(AuthSutik.TOKEN_SUTI, "Strict"))
+                .andExpect(cookie().httpOnly(AuthSutik.JELZO_SUTI, false))
+                .andReturn().getResponse();
+        return "Bearer " + valasz.getCookie(AuthSutik.TOKEN_SUTI).getValue();
     }
 
     private void foglalas(String auth, String jegyNev, int szek, int vartStatusz) throws Exception {
@@ -252,11 +271,7 @@ class MoziApiTests {
         admin.setSzuletesiDatum(LocalDate.of(1985, 3, 12));
         admin.setJog(adminJog);
         felhasznaloRepository.save(admin);
-        String adminAuth = "Bearer " + objectMapper.readTree(mvc.perform(post("/auth/bejelentkezes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"admin@example.com\",\"jelszo\":\"admin1234\"}"))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString()).get("token").asString();
+        String adminAuth = belep("admin@example.com", "admin1234");
         String felhasznaloAuth = tokenKorral("user@example.com", 30);
 
         String ujFilm = """
@@ -341,12 +356,7 @@ class MoziApiTests {
                         .content("{\"email\":\"anna@example.com\",\"jelszo\":\"rossz-jelszo\"}"))
                 .andExpect(status().isUnauthorized());
 
-        String token = objectMapper.readTree(mvc.perform(post("/auth/bejelentkezes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"anna@example.com\",\"jelszo\":\"titkos123\"}"))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString()).get("token").asString();
-        String auth = "Bearer " + token;
+        String auth = belep("anna@example.com", "titkos123");
 
         mvc.perform(get("/api/felhasznalo/profil")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/felhasznalo/profil").header("Authorization", auth))
@@ -391,5 +401,66 @@ class MoziApiTests {
                 .content(teljesFoglalas.formatted(holnap, 3))).andExpect(status().isNoContent());
         mvc.perform(get("/api/jegyfoglalasok").header("Authorization", auth))
                 .andExpect(jsonPath("$.content", hasSize(0)));
+    }
+
+    @Test
+    void sutisHitelesitesCsrfVisszamondasEsKijelentkezes() throws Exception {
+        String auth = tokenKorral("suti@example.com", 20);
+        Cookie suti = new Cookie(AuthSutik.TOKEN_SUTI, auth.substring("Bearer ".length()));
+        String foglalasTorzs = "{\"jegyNev\":\"Diák\",\"szekSzam\":1}";
+
+        // A böngésző a HttpOnly sütivel hitelesít.
+        mvc.perform(get("/api/felhasznalo/profil").cookie(suti))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.email").value("suti@example.com"));
+
+        // Sütivel hitelesített módosító kérés CSRF-token nélkül tilos (más oldalról indított kérés ellen).
+        mvc.perform(post("/api/napi-beosztas/" + beosztasId + "/foglalas").cookie(suti)
+                        .contentType(MediaType.APPLICATION_JSON).content(foglalasTorzs))
+                .andExpect(status().isForbidden());
+
+        // Az XSRF-TOKEN sütit a frontend olvassa ki, és fejlécben küldi vissza.
+        Cookie xsrf = mvc.perform(get("/auth/csrf")).andExpect(status().isNoContent())
+                .andExpect(cookie().httpOnly("XSRF-TOKEN", false))
+                .andReturn().getResponse().getCookie("XSRF-TOKEN");
+        String kod = objectMapper.readTree(mvc.perform(post("/api/napi-beosztas/" + beosztasId + "/foglalas")
+                        .cookie(suti, xsrf).header("X-XSRF-TOKEN", xsrf.getValue())
+                        .contentType(MediaType.APPLICATION_JSON).content(foglalasTorzs))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString()).get("foglalasKod").asString();
+
+        // Jegyeim: a még el nem kezdődött előadás jegye visszamondható, a felületről is.
+        mvc.perform(get("/api/jegyfoglalasok/jegyek").cookie(suti))
+                .andExpect(jsonPath("$[0].foglalasKod").value(kod))
+                .andExpect(jsonPath("$[0].lemondhato").value(true));
+        mvc.perform(delete("/api/jegyfoglalasok/" + kod).cookie(suti))
+                .andExpect(status().isForbidden());
+        mvc.perform(delete("/api/jegyfoglalasok/" + kod).cookie(suti, xsrf).header("X-XSRF-TOKEN", xsrf.getValue()))
+                .andExpect(status().isNoContent());
+        mvc.perform(get("/api/jegyfoglalasok/jegyek").cookie(suti)).andExpect(jsonPath("$", hasSize(0)));
+
+        // Más kulccsal aláírt, illetve kibocsátó/célközönség nélküli token nem fogadható el; a hibás süti törlődik.
+        String hamis = Jwts.builder().subject("suti@example.com").claim("ver", 0)
+                .expiration(new java.util.Date(System.currentTimeMillis() + 60_000))
+                .signWith(Jwts.SIG.HS256.key().build()).compact();
+        mvc.perform(get("/api/felhasznalo/profil").cookie(new Cookie(AuthSutik.TOKEN_SUTI, hamis)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(cookie().maxAge(AuthSutik.TOKEN_SUTI, 0));
+        String kibocsatoNelkul = Jwts.builder().subject("suti@example.com").claim("ver", 0)
+                .expiration(new java.util.Date(System.currentTimeMillis() + 60_000))
+                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret))).compact();
+        mvc.perform(get("/api/felhasznalo/profil").header("Authorization", "Bearer " + kibocsatoNelkul))
+                .andExpect(status().isUnauthorized());
+
+        // Kijelentkezés: a sütik törlődnek, és a korábbi token (máshol, pl. ellopva) sem használható tovább.
+        mvc.perform(post("/auth/kijelentkezes").cookie(suti, xsrf).header("X-XSRF-TOKEN", xsrf.getValue()))
+                .andExpect(status().isNoContent())
+                .andExpect(cookie().maxAge(AuthSutik.TOKEN_SUTI, 0))
+                .andExpect(cookie().maxAge(AuthSutik.JELZO_SUTI, 0));
+        mvc.perform(get("/api/felhasznalo/profil").cookie(suti)).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/felhasznalo/profil").header("Authorization", auth)).andExpect(status().isUnauthorized());
+
+        // Újra bejelentkezve új, érvényes tokent kap.
+        mvc.perform(get("/api/felhasznalo/profil").header("Authorization", belep("suti@example.com", "titkos123")))
+                .andExpect(status().isOk());
     }
 }

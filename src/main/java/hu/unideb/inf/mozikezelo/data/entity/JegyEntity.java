@@ -36,7 +36,7 @@ public class JegyEntity extends AuditEntity {
     @Column(nullable = false)
     private int ar;
 
-    // Milyen feltétel kell a jegy igényléséhez (a tényleges ellenőrzés a JegyTipus alapján történik).
+
     @Column(nullable = false, length = 255)
     private String feltetel;
 

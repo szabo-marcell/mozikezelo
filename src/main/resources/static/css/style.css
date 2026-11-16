@@ -196,7 +196,7 @@ a.kartya:hover {
 
 .mezo small { color: var(--halvany); }
 
-input, select {
+input, select, textarea {
     font: inherit;
     color: var(--szoveg);
     background: var(--hatter);
@@ -206,7 +206,7 @@ input, select {
     width: 100%;
 }
 
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus {
     outline: 2px solid var(--kiemelt);
     outline-offset: 1px;
 }
@@ -264,6 +264,17 @@ input[readonly] {
 .gomb.masodlagos:hover { border-color: var(--kiemelt); }
 
 .gomb.kicsi { padding: 4px 12px; font-size: .9rem; }
+
+/* Visszavonhatatlan művelet (pl. jegy visszamondása). */
+.gomb.veszely {
+    background: transparent;
+    color: var(--hiba);
+    border: 1px solid var(--hiba);
+}
+
+.gomb.veszely:hover { background: rgba(239, 107, 107, .12); }
+
+.gomb[hidden] { display: none; }
 
 .gombsor { display: flex; flex-wrap: wrap; gap: 10px; }
 
@@ -337,6 +348,20 @@ input[readonly] {
 }
 
 .elhalvanyitott { opacity: .6; }
+
+/* Visszamondás foglalási kóddal (lenyitható) */
+.kodos-lemondas { margin: -6px 0 20px; }
+
+.kodos-lemondas summary {
+    cursor: pointer;
+    color: var(--halvany);
+    font-weight: 600;
+    width: fit-content;
+}
+
+.kodos-lemondas summary:hover { color: var(--kiemelt); }
+.kodos-lemondas[open] summary { margin-bottom: 12px; }
+.kodos-lemondas input { text-transform: uppercase; }
 .lejart-cimke { color: var(--hiba); border-color: var(--hiba); }
 .nincs-gorgetes { overflow: hidden; }
 
@@ -357,6 +382,7 @@ input[readonly] {
 .jegy-nezet-eszkozok {
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
     width: 100%;
     max-width: 760px;
     margin: 0 auto 12px;
@@ -492,3 +518,34 @@ input[readonly] {
     .mozijegy-perforacio { margin-left: -18px; margin-right: -18px; }
     .mozijegy-kod { font-size: 1.5rem; }
 }
+
+/* ---------- Admin: filmek kezelése ---------- */
+textarea { resize: vertical; min-height: 96px; }
+
+.admin-eszkozsor {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.admin-eszkozsor input { flex: 1; min-width: 200px; width: auto; }
+
+.admin-elonezet {
+    display: flex;
+    gap: 16px;
+}
+
+.admin-elonezet figure { margin: 0; text-align: center; color: var(--halvany); font-size: .85rem; }
+
+.admin-elonezet img {
+    display: block;
+    width: 100px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border: 1px solid var(--keret);
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+
+.admin-elonezet img[hidden] { display: none; }

@@ -1,6 +1,7 @@
 package hu.unideb.inf.mozikezelo.config;
 
 import hu.unideb.inf.mozikezelo.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,7 +13,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,6 +27,8 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -51,21 +53,46 @@ public class SecurityConfig {
             PathPatternRequestMatcher.withDefaults().matcher("/h2/**"),
             PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**"));
 
+    /**
+     * CSRF-ellenőrzés nélküli kérések:
+     * - Bearer-fejléces kérés: nem süti hitelesíti, más oldal nem tud ilyet küldeni (a CORS nem engedi a fejlécet).
+     * - Token-süti nélküli kérés: névtelen, nincs mit kihasználni (a védett végpont 401-et ad rá).
+     * - Regisztráció és bejelentkezés: még nincs mit ellopni; JSON-törzset más oldal űrlapja nem tud küldeni.
+     */
+    private static final RequestMatcher CSRF_NELKUL = new OrRequestMatcher(
+            req -> {
+                String header = req.getHeader("Authorization");
+                return header != null && header.startsWith("Bearer ");
+            },
+            req -> req.getCookies() == null || Arrays.stream(req.getCookies())
+                    .noneMatch(c -> AuthSutik.TOKEN_SUTI.equals(c.getName())),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/auth/regisztracio"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/auth/bejelentkezes"),
+            PathPatternRequestMatcher.withDefaults().matcher("/h2/**"));
+
     private final UserService userService;
     private final JwtFilter jwtFilter;
+    // A H2-konzol csak akkor nyitott, ha be van kapcsolva (alapból csak a dev profilban).
+    private final boolean h2Konzol;
 
-    public SecurityConfig(UserService userService, JwtFilter jwtFilter) {
+    public SecurityConfig(UserService userService, JwtFilter jwtFilter,
+                          @Value("${spring.h2.console.enabled:false}") boolean h2Konzol) {
         this.userService = userService;
         this.jwtFilter = jwtFilter;
+        this.h2Konzol = h2Konzol;
     }
 
     @Bean
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        if (h2Konzol) {
+            http.authorizeHttpRequests(req -> req.requestMatchers("/h2/**").permitAll());
+        }
+        // A JWT HttpOnly sütiben utazik, ezért kell a CSRF-védelem: a frontend az XSRF-TOKEN sütiből
+        // olvassa ki a tokent, és X-XSRF-TOKEN fejlécben küldi vissza (Spring "SPA" mód).
+        http.csrf(c -> c.spa().ignoringRequestMatchers(CSRF_NELKUL))
                 .authorizeHttpRequests(req -> req
-                        // Regisztráció, bejelentkezés, H2-konzol, API-dokumentáció.
-                        .requestMatchers("/auth/**", "/h2/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                                "/error")
+                        // Regisztráció, bejelentkezés, kijelentkezés, CSRF-token, API-dokumentáció.
+                        .requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error")
                         .permitAll()
                         // A frontend statikus oldalai (HTML, CSS, JS).
                         .requestMatchers(HttpMethod.GET, "/", "/index.html", "/*.html", "/css/**", "/js/**", "/img/**",

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dynamic Cinema – Filmek kezelése</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+    <h1>Filmek kezelése</h1>
+    <p class="alcim">Adminisztrátori felület: filmek felvétele, módosítása és törlése.</p>
+
+    <p id="uzenet" class="uzenet"></p>
+
+    <!-- Lista -->
+    <section id="lista-resz">
+        <div class="admin-eszkozsor">
+            <input id="kereso" type="search" placeholder="Keresés cím, rendező vagy műfaj szerint…" aria-label="Keresés">
+            <button class="gomb" type="button" id="uj-film">+ Új film</button>
+        </div>
+        <div id="filmek" class="lista"></div>
+    </section>
+
+    <!-- Felvétel / módosítás -->
+    <form id="film-urlap" class="urlap szeles" novalidate hidden>
+        <h2 id="urlap-cim">Új film</h2>
+
+        <div class="mezo">
+            <label for="cim">Cím *</label>
+            <input id="cim" name="cim" type="text" maxlength="200" required>
+        </div>
+        <div class="ket-oszlop">
+            <div class="mezo">
+                <label for="bemutatoDatum">Bemutató dátuma *</label>
+                <input id="bemutatoDatum" name="bemutatoDatum" type="date" required>
+            </div>
+            <div class="mezo">
+                <label for="hosszPerc">Hossz (perc) *</label>
+                <input id="hosszPerc" name="hosszPerc" type="number" min="1" max="1000" step="1" required>
+                <small id="hossz-tipp"></small>
+            </div>
+        </div>
+        <div class="ket-oszlop">
+            <div class="mezo">
+                <label for="mufaj">Műfaj *</label>
+                <input id="mufaj" name="mufaj" type="text" maxlength="60" list="mufajlista" required>
+                <datalist id="mufajlista"></datalist>
+            </div>
+            <div class="mezo">
+                <label for="gyartoOrszag">Gyártó ország *</label>
+                <input id="gyartoOrszag" name="gyartoOrszag" type="text" maxlength="100" required>
+            </div>
+        </div>
+        <div class="ket-oszlop">
+            <div class="mezo">
+                <label for="rendezo">Rendező *</label>
+                <input id="rendezo" name="rendezo" type="text" maxlength="100" required>
+            </div>
+            <div class="mezo">
+                <label for="foszereplo">Főszereplő *</label>
+                <input id="foszereplo" name="foszereplo" type="text" maxlength="100" required>
+            </div>
+        </div>
+        <div class="ket-oszlop">
+            <div class="mezo">
+                <label for="foszinkronszinesz">Főszinkronszínész</label>
+                <input id="foszinkronszinesz" name="foszinkronszinesz" type="text" maxlength="100">
+                <small>Magyar vagy feliratos filmnél hagyd üresen.</small>
+            </div>
+            <div class="mezo">
+                <label for="forgalmazo">Forgalmazó *</label>
+                <input id="forgalmazo" name="forgalmazo" type="text" maxlength="150" required>
+            </div>
+        </div>
+        <div class="mezo">
+            <label for="gyartoCeg">Gyártó cég *</label>
+            <input id="gyartoCeg" name="gyartoCeg" type="text" maxlength="150" required>
+        </div>
+        <div class="mezo">
+            <label for="leiras">Leírás</label>
+            <textarea id="leiras" name="leiras" rows="4" maxlength="2000"></textarea>
+            <small id="leiras-szamlalo">0 / 2000</small>
+        </div>
+        <div class="ket-oszlop">
+            <div class="mezo">
+                <label for="kepUrl">Plakát útvonala</label>
+                <input id="kepUrl" name="kepUrl" type="text" maxlength="300" placeholder="/img/plakatok/film.webp" pattern="/[^/].*">
+                <small>A plakát a <code>static/img/plakatok/</code> mappában legyen.</small>
+            </div>
+            <div class="mezo">
+                <label for="logoUrl">Logó útvonala (a jegyen)</label>
+                <input id="logoUrl" name="logoUrl" type="text" maxlength="300" placeholder="/img/filmek/film.svg" pattern="/[^/].*">
+                <small>Ha üres, a jegyen a plakát látszik.</small>
+            </div>
+        </div>
+        <div class="admin-elonezet">
+            <figure><img id="kep-elonezet" alt="Plakát előnézete" hidden><figcaption>Plakát</figcaption></figure>
+            <figure><img id="logo-elonezet" alt="Logó előnézete" hidden><figcaption>Logó</figcaption></figure>
+        </div>
+
+        <div class="gombsor">
+            <button class="gomb" type="submit" id="mentes">Mentés</button>
+            <button class="gomb masodlagos" type="button" id="megse">Mégse</button>
+        </div>
+    </form>
+</main>
+<script src="js/app.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

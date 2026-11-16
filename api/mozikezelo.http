@@ -1,6 +1,7 @@
 @host = http://localhost:9090
 # Mintaadatokkal indított adatbázisban: demo@mozi.hu / demo1234
-# A bejelentkezés válaszából a token értékét másold ide.
+# A bejelentkezés válaszának Set-Cookie fejlécéből a MOZI_TOKEN értékét másold ide
+# (a token már nincs a válasz törzsében). Bearer fejléccel nem kell CSRF-token.
 @token = ide-masold-a-tokent
 @datum = 2026-11-14
 @beosztasId = 8
@@ -17,7 +18,7 @@ Content-Type: application/json
   "szuletesiDatum": "1999-05-20"
 }
 
-### Bejelentkezés (a válaszban a token)
+### Bejelentkezés (a token a MOZI_TOKEN HttpOnly sütiben érkezik)
 POST {{host}}/auth/bejelentkezes
 Content-Type: application/json
 
@@ -135,4 +136,8 @@ Content-Type: application/json
 
 ### Félbehagyott rendelés törlése
 DELETE {{host}}/api/felbehagyott-rendelesek/1
+Authorization: Bearer {{token}}
+
+### Kijelentkezés: a felhasználó összes korábbi tokenje érvénytelenné válik
+POST {{host}}/auth/kijelentkezes
 Authorization: Bearer {{token}}

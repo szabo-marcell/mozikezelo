@@ -71,7 +71,8 @@ public interface MoziMapper {
     @Mapping(target = "felhasznaloNev", source = "entity.felhasznalo.nev")
     @Mapping(target = "foglalva", source = "entity.letrehozva")
     @Mapping(target = "ervenyes", source = "ervenyes")
-    BelepoJegyResponse belepoJegy(JegyfoglalasEntity entity, boolean ervenyes);
+    @Mapping(target = "lemondhato", source = "lemondhato")
+    BelepoJegyResponse belepoJegy(JegyfoglalasEntity entity, boolean ervenyes, boolean lemondhato);
 
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "napiBeosztasId", source = "entity.napiBeosztas.id")

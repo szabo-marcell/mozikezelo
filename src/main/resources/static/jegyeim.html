@@ -9,7 +9,8 @@
 <body>
 <main>
     <h1>Jegyeim</h1>
-    <p class="alcim">A kifizetett foglalásaidhoz tartozó mozijegyek. Kattints egy jegyre a teljes képernyős megjelenítéshez.</p>
+    <p class="alcim">A kifizetett foglalásaidhoz tartozó mozijegyek. Nyisd meg a jegyet a teljes képernyős megjelenítéshez,
+        vagy mondd vissza, amíg az előadás el nem kezdődik.</p>
 
     <form class="napvalaszto" id="szuro">
         <label for="nezet"><strong>Jegyek:</strong></label>
@@ -20,13 +21,30 @@
         </select>
     </form>
 
-    <p id="uzenet" class="uzenet"></p>
+    <details class="kodos-lemondas">
+        <summary>Visszamondás foglalási kóddal</summary>
+        <form class="urlap" id="kod-urlap" novalidate>
+            <div class="mezo">
+                <label for="foglalasKod">Foglalási kód</label>
+                <input id="foglalasKod" name="foglalasKod" required maxlength="20" placeholder="MZ-XXXXXXXX"
+                       autocomplete="off" spellcheck="false">
+                <small>A foglalás visszaigazolásán szereplő kód. Csak a saját, még el nem kezdődött előadásra szóló
+                    foglalásod mondható vissza.</small>
+            </div>
+            <div class="gombsor">
+                <button class="gomb veszely" type="submit">Foglalás visszamondása</button>
+            </div>
+        </form>
+    </details>
+
+    <p id="uzenet" class="uzenet" role="status"></p>
     <div id="jegyek" class="lista"></div>
 </main>
 
 <!-- Teljes képernyős jegynézet -->
 <div id="jegy-nezet" class="jegy-nezet" role="dialog" aria-modal="true" aria-label="Mozijegy" hidden>
     <div class="jegy-nezet-eszkozok">
+        <button class="gomb veszely kicsi" type="button" id="nezet-lemondas" hidden>Jegy visszamondása</button>
         <button class="gomb masodlagos kicsi" type="button" id="bezar">✕ Bezárás</button>
     </div>
     <div id="jegy-helye" class="jegy-helye"></div>
