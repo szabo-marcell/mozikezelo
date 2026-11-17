@@ -36,6 +36,20 @@ public interface NapiBeosztasRepository extends JpaRepository<NapiBeosztasEntity
 
     boolean existsByJegy_Id(Long jegyId);
 
+    // Az adott terem aznapi vetítései közül azok, amelyek átfedik a [kezdes, befejezes) időszakot.
+    // Ha az egyik vetítés pontosan akkor kezdődik, amikor a másik véget ér, az nem átfedés.
+    @EntityGraph(attributePaths = {"film"})
+    @Query("""
+            SELECT b FROM NapiBeosztasEntity b
+            WHERE b.terem.id = :teremId AND b.datum = :datum
+              AND b.kezdes < :befejezes AND b.befejezes > :kezdes
+            ORDER BY b.kezdes
+            """)
+    List<NapiBeosztasEntity> utkozoVetitesek(@Param("teremId") Long teremId,
+                                             @Param("datum") LocalDate datum,
+                                             @Param("kezdes") LocalTime kezdes,
+                                             @Param("befejezes") LocalTime befejezes);
+
     // Ütközik-e egy új vetítés az adott terem aznapi beosztásával.
     @Query("""
             SELECT COUNT(b) > 0 FROM NapiBeosztasEntity b

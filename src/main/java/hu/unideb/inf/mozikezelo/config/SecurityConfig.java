@@ -106,6 +106,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/filmek").hasAuthority(ADMIN_JOG)
                         .requestMatchers(HttpMethod.PUT, "/api/filmek/*").hasAuthority(ADMIN_JOG)
                         .requestMatchers(HttpMethod.DELETE, "/api/filmek/*").hasAuthority(ADMIN_JOG)
+                        // Vetítést felvenni a napi beosztásba és onnan törölni szintén csak ADMIN tud.
+                        .requestMatchers(HttpMethod.POST, "/api/napi-beosztas").hasAuthority(ADMIN_JOG)
+                        .requestMatchers(HttpMethod.DELETE, "/api/napi-beosztas/*").hasAuthority(ADMIN_JOG)
                         // Profil, foglalás és visszamondás csak bejelentkezve.
                         .anyRequest()
                         .authenticated())

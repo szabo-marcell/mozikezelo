@@ -109,6 +109,8 @@ function hibauzenet(adat, statusz) {
 }
 
 // ---------- Fejléc ----------
+const ADMIN_MENUPONTOK = [["admin.html", "Filmek kezelése"], ["musor.html", "Műsor kezelése"]];
+
 function fejlec(aktiv) {
     const menupontok = [
         ["index.html", "Kezdőlap"],
@@ -120,7 +122,7 @@ function fejlec(aktiv) {
     if (bejelentkezve()) {
         menupontok.push(["jegyeim.html", "Jegyeim"], ["felbehagyott.html", "Félbehagyott rendeléseim"]);
     }
-    if (admin()) menupontok.push(["admin.html", "Filmek kezelése"]);
+    if (admin()) menupontok.push(...ADMIN_MENUPONTOK);
     const header = document.createElement("header");
     header.className = "fejlec";
     const belso = elem("div", "fejlec-belso");
@@ -155,9 +157,11 @@ function fejlec(aktiv) {
         api("/api/felhasznalo/profil").then(p => {
             localStorage.setItem(JOG_KULCS, p.jogNev || "");
             if (admin()) {
-                const a = elem("a", aktiv === "admin.html" ? "aktiv" : "", "Filmek kezelése");
-                a.href = "admin.html";
-                menu.append(a);
+                for (const [href, felirat] of ADMIN_MENUPONTOK) {
+                    const a = elem("a", aktiv === href ? "aktiv" : "", felirat);
+                    a.href = href;
+                    menu.append(a);
+                }
             }
         }).catch(() => {});
     }

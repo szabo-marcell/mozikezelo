@@ -333,6 +333,97 @@ class MoziApiTests {
                 .andExpect(status().isMethodNotAllowed());
     }
 
+    private String vetites(Long filmId, Long teremId, LocalDate datum, String kezdes) {
+        return """
+                {"filmId":%d,"teremId":%d,"datum":"%s","kezdes":"%s","eredetiNyelvu":false}"""
+                .formatted(filmId, teremId, datum, kezdes);
+    }
+
+    @Test
+    void adminVetitestVeszFelEsTorolUtkozesNelkul() throws Exception {
+        JogEntity adminJog = jogRepository.save(new JogEntity(null, "ADMIN", "Mozi adminisztrátor"));
+        FelhasznaloEntity admin = new FelhasznaloEntity();
+        admin.setNev("Admin");
+        admin.setEmail("admin@example.com");
+        admin.setJelszo(passwordEncoder.encode("admin1234"));
+        admin.setSzuletesiDatum(LocalDate.of(1985, 3, 12));
+        admin.setJog(adminJog);
+        felhasznaloRepository.save(admin);
+        String adminAuth = belep("admin@example.com", "admin1234");
+        String felhasznaloAuth = tokenKorral("user@example.com", 21);
+
+        TeremEntity masikTerem = new TeremEntity();
+        masikTerem.setNev("Nagyterem");
+        masikTerem.setEmelet(0);
+        masikTerem.setFerohely(100);
+        masikTerem.setVetitesTipus(VetitesTipus.HAROM_D);
+        Long masikTeremId = teremRepository.save(masikTerem).getId();
+        // A Teszt Film 100 perces, a beállításban holnap 18:00–20:00 megy a Kamarateremben.
+        Long filmId = filmRepository.findAll().getFirst().getId();
+
+        // Jogosultság: token nélkül 401, sima felhasználóként 403.
+        mvc.perform(post("/api/napi-beosztas").contentType(MediaType.APPLICATION_JSON)
+                        .content(vetites(filmId, teremId, holnap, "10:00")))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/napi-beosztas").header("Authorization", felhasznaloAuth)
+                        .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, "10:00")))
+                .andExpect(status().isForbidden());
+
+        // A vége automatikusan: kezdés + 100 perc film + 15 perc plusz idő; jegy nélkül teljes árú.
+        String valasz = mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
+                        .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, "16:00")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.befejezes").value("17:55:00"))
+                .andExpect(jsonPath("$.jegyNev").value("Teljes árú"))
+                .andReturn().getResponse().getContentAsString();
+        long ujId = objectMapper.readTree(valasz).get("id").asLong();
+
+        // Ugyanabban a teremben átfedés nem lehet (sem a 16:00–17:55, sem a 18:00–20:00 vetítéssel).
+        for (String kezdes : new String[]{"17:00", "15:00", "17:50", "19:59"}) {
+            mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
+                            .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, kezdes)))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.detail").value(containsString("Időpont-ütközés")));
+        }
+        // Az egyik vége után közvetlenül kezdődhet a következő.
+        mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
+                        .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, "20:00")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.befejezes").value("21:55:00"));
+        // Másik teremben ugyanabban az időben mehet film.
+        mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
+                        .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, masikTeremId, holnap, "18:30")))
+                .andExpect(status().isCreated());
+        // Éjfél után véget érő és múltbeli vetítés nem vehető fel.
+        mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
+                        .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, masikTeremId, holnap, "23:00")))
+                .andExpect(status().isConflict());
+        mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(vetites(filmId, teremId, LocalDate.now().minusDays(1), "10:00")))
+                .andExpect(status().isConflict());
+        mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
+                        .contentType(MediaType.APPLICATION_JSON).content(vetites(999999L, teremId, holnap, "10:00")))
+                .andExpect(status().isNotFound());
+        mvc.perform(get("/api/napi-beosztas").param("datum", holnap.toString()))
+                .andExpect(jsonPath("$", hasSize(4)));
+
+        // Törlés: sima felhasználó nem; lefoglalt vetítés nem; foglalás nélküli igen.
+        mvc.perform(delete("/api/napi-beosztas/" + ujId).header("Authorization", felhasznaloAuth))
+                .andExpect(status().isForbidden());
+        foglalas(felhasznaloAuth, "Diák", 1, 201);
+        mvc.perform(delete("/api/napi-beosztas/" + beosztasId).header("Authorization", adminAuth))
+                .andExpect(status().isConflict());
+        mvc.perform(delete("/api/napi-beosztas/" + ujId).header("Authorization", adminAuth))
+                .andExpect(status().isNoContent());
+        mvc.perform(delete("/api/napi-beosztas/" + ujId).header("Authorization", adminAuth))
+                .andExpect(status().isNotFound());
+        // A törölt vetítés helyére már felvehető másik.
+        mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
+                        .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, "16:05")))
+                .andExpect(status().isCreated());
+    }
+
     @Test
     void csakNegyfeleJegyLetezhet() {
         org.junit.jupiter.api.Assertions.assertEquals(4, JegyTipus.values().length);

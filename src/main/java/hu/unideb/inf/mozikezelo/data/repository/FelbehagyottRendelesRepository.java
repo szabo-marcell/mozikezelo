@@ -22,4 +22,8 @@ public interface FelbehagyottRendelesRepository extends JpaRepository<Felbehagyo
     // Sikeres fizetés után a rendelés már nem félbehagyott.
     @Modifying
     void deleteAllByFelhasznalo_IdAndNapiBeosztas_IdAndSzekSzam(Long felhasznaloId, Long napiBeosztasId, int szekSzam);
+
+    // Az előadás törlésekor a rá szóló, még ki nem fizetett rendelések is törlődnek.
+    @Modifying
+    void deleteAllByNapiBeosztas_Id(Long napiBeosztasId);
 }

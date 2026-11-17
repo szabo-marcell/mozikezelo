@@ -6,12 +6,14 @@ import hu.unideb.inf.mozikezelo.service.domain.NapiBeosztasService;
 import hu.unideb.inf.mozikezelo.service.dto.domain.EloadasFoglalasRequest;
 import hu.unideb.inf.mozikezelo.service.dto.domain.EloadasReszletekResponse;
 import hu.unideb.inf.mozikezelo.service.dto.domain.JegyfoglalasResponse;
+import hu.unideb.inf.mozikezelo.service.dto.domain.NapiBeosztasRequest;
 import hu.unideb.inf.mozikezelo.service.dto.domain.NapiBeosztasResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +40,20 @@ public class NapiBeosztasController {
     public List<NapiBeosztasResponse> napSzerint(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datum) {
         return service.napra(datum);
+    }
+
+    // Új vetítés felvétele (csak ADMIN). A befejezést a szerver számolja; teremütközés esetén 409.
+    @PostMapping
+    public ResponseEntity<NapiBeosztasResponse> letrehoz(@Valid @RequestBody NapiBeosztasRequest request) {
+        NapiBeosztasResponse vetites = service.letrehoz(request);
+        return ResponseEntity.created(URI.create(vetites.reszletekUrl())).body(vetites);
+    }
+
+    // Vetítés törlése (csak ADMIN). Elkezdődött vagy foglalt jeggyel rendelkező vetítés nem törölhető.
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void torol(@PathVariable @Positive Long id) {
+        service.torol(id);
     }
 
     // Egy előadás kiválasztása a listából. Tokennel csak a felhasználó által igényelhető jegyek jelennek meg.

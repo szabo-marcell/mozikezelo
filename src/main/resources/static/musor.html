@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dynamic Cinema – Műsor kezelése</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+    <h1>Műsor kezelése</h1>
+    <p class="alcim">Adminisztrátori felület: vetítések felvétele a napi beosztásba és törlése.
+        Egy teremben egyszerre csak egy film mehet.</p>
+
+    <p id="uzenet" class="uzenet"></p>
+
+    <div id="tartalom" hidden>
+        <form class="napvalaszto" id="napvalaszto">
+            <label for="nap"><strong>Nap:</strong></label>
+            <input id="nap" name="datum" type="date" required>
+            <button class="gomb masodlagos kicsi" type="button" id="elozo-nap" aria-label="Előző nap">◀</button>
+            <button class="gomb masodlagos kicsi" type="button" id="kovetkezo-nap" aria-label="Következő nap">▶</button>
+        </form>
+
+        <!-- Új vetítés felvétele -->
+        <form id="vetites-urlap" class="urlap szeles" novalidate>
+            <h2>Vetítés hozzáadása</h2>
+            <div class="mezo">
+                <label for="film">Film *</label>
+                <select id="film" name="film" required></select>
+            </div>
+            <div class="ket-oszlop">
+                <div class="mezo">
+                    <label for="terem">Terem *</label>
+                    <select id="terem" name="terem" required></select>
+                </div>
+                <div class="mezo">
+                    <label for="kezdes">Kezdés *</label>
+                    <input id="kezdes" name="kezdes" type="time" step="300" required>
+                </div>
+            </div>
+            <div class="ket-oszlop">
+                <div class="mezo">
+                    <label for="jegy">Jegytípus</label>
+                    <select id="jegy" name="jegy"></select>
+                </div>
+                <div class="mezo">
+                    <label class="jelolo"><input id="eredetiNyelvu" name="eredetiNyelvu" type="checkbox">
+                        Eredeti nyelvű (feliratos)</label>
+                    <small id="nyelv-tipp"></small>
+                </div>
+            </div>
+
+            <p id="idotartam" class="uzenet info"></p>
+            <p id="utkozes" class="uzenet hiba"></p>
+
+            <div class="gombsor">
+                <button class="gomb" type="submit" id="hozzaadas">Hozzáadás a beosztáshoz</button>
+            </div>
+        </form>
+
+        <h2 class="terkoz-felul" id="lista-cim">Beosztás</h2>
+        <div id="termek" class="lista"></div>
+    </div>
+</main>
+<script src="js/app.js"></script>
+<script src="js/musor.js"></script>
+</body>
+</html>

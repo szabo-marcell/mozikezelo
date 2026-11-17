@@ -53,4 +53,6 @@ public interface JegyfoglalasRepository extends JpaRepository<JegyfoglalasEntity
     boolean existsByTerem_Id(Long teremId);
 
     boolean existsByJegy_Id(Long jegyId);
+
+    boolean existsByNapiBeosztas_Id(Long napiBeosztasId);
 }

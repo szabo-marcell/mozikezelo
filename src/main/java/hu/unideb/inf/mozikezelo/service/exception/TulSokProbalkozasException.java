@@ -8,7 +8,6 @@ public class TulSokProbalkozasException extends RuntimeException {
 
     public TulSokProbalkozasException(Duration hatralevo) {
         super("Túl sok sikertelen bejelentkezési kísérlet.");
-        // Felfelé kerekítünk, hogy a kliens ne próbálkozzon túl korán.
         this.varakozasMasodperc = Math.max(1, (hatralevo.toMillis() + 999) / 1000);
     }
 

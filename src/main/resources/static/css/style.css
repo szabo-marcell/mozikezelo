@@ -549,3 +549,32 @@ textarea { resize: vertical; min-height: 96px; }
 }
 
 .admin-elonezet img[hidden] { display: none; }
+
+/* ---------- Műsor kezelése (admin) ---------- */
+.musor-sorok { list-style: none; margin: 10px 0 0; padding: 0; }
+
+.musor-sor {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--keret);
+}
+
+.musor-sor .cimkek { margin-top: 4px; }
+
+.jelolo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 26px;
+    font-weight: 600;
+}
+
+.jelolo input { width: auto; }
+
+#vetites-urlap { margin-bottom: 8px; }
+#vetites-urlap .uzenet { margin: 0; }
+
+.musor-sor .gomb:disabled, #hozzaadas:disabled { cursor: not-allowed; }
