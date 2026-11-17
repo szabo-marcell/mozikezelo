@@ -1,11 +1,9 @@
-// beosztas.html oldal szkriptje (a CSP miatt nincs inline JavaScript).
 fejlec("beosztas.html");
 const NAPOK_SZAMA = 7;
 const valaszto = document.getElementById("nap");
 const lista = document.getElementById("vetitesek");
 const doboz = document.getElementById("uzenet");
 
-// A select a mai és a következő 6 nap közül választ.
 const ma = new Date();
 for (let i = 0; i < NAPOK_SZAMA; i++) {
     const d = new Date(ma.getFullYear(), ma.getMonth(), ma.getDate() + i);

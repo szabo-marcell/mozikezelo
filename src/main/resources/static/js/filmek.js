@@ -1,4 +1,3 @@
-// filmek.html oldal szkriptje (a CSP miatt nincs inline JavaScript).
 fejlec("filmek.html");
 const lista = document.getElementById("filmek");
 

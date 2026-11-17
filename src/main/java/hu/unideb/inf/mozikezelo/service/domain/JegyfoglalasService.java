@@ -53,31 +53,26 @@ public class JegyfoglalasService {
         return foglalasok.findAllByFelhasznalo_Id(felhasznaloId, rendezett).map(mapper::foglalas);
     }
 
-    // Foglalás az összes adat megadásával: film, időpont, jegytípus, szék (és szükség esetén terem).
     @Transactional
     public JegyfoglalasResponse foglal(Long felhasznaloId, JegyfoglalasRequest request) {
         NapiBeosztasEntity beosztas = eloadasKeresese(request);
         return foglalEloadasra(felhasznaloId, beosztas, request.jegyNev(), request.szekSzam());
     }
 
-    // Foglalás a napi beosztásból kiválasztott előadásra: csak a jegytípus és a szék kell.
     @Transactional
     public JegyfoglalasResponse foglalEloadasra(Long felhasznaloId, Long beosztasId, EloadasFoglalasRequest request) {
         NapiBeosztasEntity beosztas = beosztasService.eloadas(beosztasId);
         return foglalEloadasra(felhasznaloId, beosztas, request.jegyNev(), request.szekSzam());
     }
 
-    // Visszamondás a speciális rendelésazonosítóval.
     @Transactional
     public void lemondKoddal(Long felhasznaloId, String foglalasKod) {
         JegyfoglalasEntity foglalas = foglalasok.findByFoglalasKod(foglalasKod.strip().toUpperCase(Locale.ROOT))
-                // Más felhasználó foglalásáról sem áruljuk el, hogy létezik.
                 .filter(f -> f.getFelhasznalo().getId().equals(felhasznaloId))
                 .orElseThrow(() -> new ErforrasNotFoundException("Nem található saját foglalás ezzel az azonosítóval: " + foglalasKod));
         lemond(foglalas);
     }
 
-    // Visszamondás az összes foglalási adat megadásával.
     @Transactional
     public void lemondAdatokkal(Long felhasznaloId, JegyfoglalasRequest request) {
         NapiBeosztasEntity beosztas = eloadasKeresese(request);
@@ -89,13 +84,11 @@ public class JegyfoglalasService {
         lemond(foglalas);
     }
 
-    // "Jegyeim": a felhasználó összes kifizetett jegye, időrendben.
     public List<BelepoJegyResponse> jegyeim(Long felhasznaloId) {
         return foglalasok.findAllByFelhasznalo_IdOrderByNapiBeosztas_DatumAscNapiBeosztas_KezdesAsc(felhasznaloId)
                 .stream().map(this::belepoJegy).toList();
     }
 
-    // Egy saját jegy a foglalási kód alapján (a teljes képernyős jegynézethez).
     public BelepoJegyResponse jegyKoddal(Long felhasznaloId, String foglalasKod) {
         return foglalasok.findByFoglalasKod(foglalasKod.strip().toUpperCase(Locale.ROOT))
                 .filter(f -> f.getFelhasznalo().getId().equals(felhasznaloId))
@@ -124,9 +117,7 @@ public class JegyfoglalasService {
         foglalas.setJegy(jegy);
         foglalas.setFelhasznalo(felhasznalo);
         foglalas.setSzekSzam(szekSzam);
-        // A párhuzamos foglalást az egyedi (előadás, szék) kényszer is kiszűri: 409-es válasz.
         JegyfoglalasResponse valasz = mapper.foglalas(foglalasok.saveAndFlush(foglalas));
-        // A kifizetett rendelés már nem félbehagyott.
         felbehagyottak.deleteAllByFelhasznalo_IdAndNapiBeosztas_IdAndSzekSzam(felhasznaloId, beosztas.getId(), szekSzam);
         return valasz;
     }

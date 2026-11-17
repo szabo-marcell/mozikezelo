@@ -72,7 +72,6 @@ public class SecurityConfig {
 
     private final UserService userService;
     private final JwtFilter jwtFilter;
-    // A H2-konzol csak akkor nyitott, ha be van kapcsolva (alapból csak a dev profilban).
     private final boolean h2Konzol;
 
     public SecurityConfig(UserService userService, JwtFilter jwtFilter,
@@ -87,42 +86,31 @@ public class SecurityConfig {
         if (h2Konzol) {
             http.authorizeHttpRequests(req -> req.requestMatchers("/h2/**").permitAll());
         }
-        // A JWT HttpOnly sütiben utazik, ezért kell a CSRF-védelem: a frontend az XSRF-TOKEN sütiből
-        // olvassa ki a tokent, és X-XSRF-TOKEN fejlécben küldi vissza (Spring "SPA" mód).
         http.csrf(c -> c.spa().ignoringRequestMatchers(CSRF_NELKUL))
                 .authorizeHttpRequests(req -> req
-                        // Regisztráció, bejelentkezés, kijelentkezés, CSRF-token, API-dokumentáció.
                         .requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error")
                         .permitAll()
-                        // A frontend statikus oldalai (HTML, CSS, JS).
                         .requestMatchers(HttpMethod.GET, "/", "/index.html", "/*.html", "/css/**", "/js/**", "/img/**",
                                 "/favicon.ico")
                         .permitAll()
-                        // A mozi, a filmek, a termek, a jegytípusok és a napi beosztás bejelentkezés nélkül is böngészhető.
                         .requestMatchers(HttpMethod.GET, "/api/mozi", "/api/filmek/**", "/api/termek/**",
                                 "/api/napi-beosztas/**", "/api/jegyek")
                         .permitAll()
-                        // Filmet felvenni, módosítani és törölni csak ADMIN jogú felhasználó tud. Mást az ADMIN sem módosíthat.
                         .requestMatchers(HttpMethod.POST, "/api/filmek").hasAuthority(ADMIN_JOG)
                         .requestMatchers(HttpMethod.PUT, "/api/filmek/*").hasAuthority(ADMIN_JOG)
                         .requestMatchers(HttpMethod.DELETE, "/api/filmek/*").hasAuthority(ADMIN_JOG)
-                        // Vetítést felvenni a napi beosztásba és onnan törölni szintén csak ADMIN tud.
                         .requestMatchers(HttpMethod.POST, "/api/napi-beosztas").hasAuthority(ADMIN_JOG)
                         .requestMatchers(HttpMethod.DELETE, "/api/napi-beosztas/*").hasAuthority(ADMIN_JOG)
-                        // Profil, foglalás és visszamondás csak bejelentkezve.
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(m -> m.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Token nélküli védett kérésre 401-es válasz.
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authenticationProvider(authProvider())
                 .headers(h -> h
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                        // Szigorú CSP az alkalmazás oldalaira: csak saját szkript és stílus, inline JS nem fut.
                         .addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(
                                 new NegatedRequestMatcher(SAJAT_CSP_NELKULI_UTAK),
                                 new ContentSecurityPolicyHeaderWriter(SZIGORU_CSP)))
-                        // A H2-konzol és a Swagger UI inline szkriptet/stílust használ, ezeknek lazább szabály.
                         .addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(
                                 SAJAT_CSP_NELKULI_UTAK,
                                 new ContentSecurityPolicyHeaderWriter(ESZKOZ_CSP)))

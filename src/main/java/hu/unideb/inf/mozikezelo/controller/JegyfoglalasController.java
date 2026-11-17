@@ -29,21 +29,17 @@ public class JegyfoglalasController {
 
     private final JegyfoglalasService service;
 
-
     @GetMapping
     public Page<JegyfoglalasResponse> sajat(@AuthenticationPrincipal FelhasznaloEntity felhasznalo,
                                             @PageableDefault(size = 20) Pageable page) {
         return service.sajatFoglalasok(felhasznalo.getId(), page);
     }
 
-
-    // "Jegyeim": a kifizetett foglalásokból kiállított mozijegyek, a film minden adatával.
     @GetMapping("/jegyek")
     public List<BelepoJegyResponse> jegyeim(@AuthenticationPrincipal FelhasznaloEntity felhasznalo) {
         return service.jegyeim(felhasznalo.getId());
     }
 
-    // Egy saját jegy a foglalási kód alapján.
     @GetMapping("/{foglalasKod}/jegy")
     public BelepoJegyResponse jegy(@PathVariable @NotBlank @Size(max = 20) String foglalasKod,
                                    @AuthenticationPrincipal FelhasznaloEntity felhasznalo) {
@@ -57,14 +53,12 @@ public class JegyfoglalasController {
         return ResponseEntity.created(URI.create("/api/jegyfoglalasok/" + foglalas.foglalasKod())).body(foglalas);
     }
 
-
     @DeleteMapping("/{foglalasKod}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void lemondKoddal(@PathVariable @NotBlank @Size(max = 20) String foglalasKod,
                              @AuthenticationPrincipal FelhasznaloEntity felhasznalo) {
         service.lemondKoddal(felhasznalo.getId(), foglalasKod);
     }
-
 
     @PostMapping("/lemondas")
     @ResponseStatus(HttpStatus.NO_CONTENT)

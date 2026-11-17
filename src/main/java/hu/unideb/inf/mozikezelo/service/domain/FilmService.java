@@ -49,18 +49,15 @@ public class FilmService {
         return mapper.film(film(id));
     }
 
-    // Új film felvétele (ADMIN).
     @Transactional
     public FilmResponse letrehoz(FilmRequest request) {
         FilmEntity film = mapper.ujFilm(normalizal(request));
         return mapper.film(filmek.saveAndFlush(film));
     }
 
-    // Film adatainak módosítása (ADMIN). A napi beosztáshoz és a foglalásokhoz nem nyúlunk.
     @Transactional
     public FilmResponse modosit(Long id, FilmRequest request) {
         FilmEntity film = film(id);
-        // A beosztott előadások befejezési ideje a film hosszából számolódott, ezért ilyenkor a hossz nem változhat.
         if (film.getHosszPerc() != request.hosszPerc() && beosztasok.existsByFilm_Id(id)) {
             throw new UzletiSzabalyException(
                     "A film hossza nem módosítható, mert már szerepel a napi beosztásban.");

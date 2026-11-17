@@ -24,12 +24,10 @@ public class TeremController {
         return service.osszes();
     }
 
-
     @GetMapping("/{id}")
     public TeremResponse azonositoSzerint(@PathVariable @Positive Long id) {
         return service.azonositoSzerint(id);
     }
-
 
     @GetMapping("/kereses")
     public TeremResponse nevSzerint(@RequestParam @NotBlank @Size(max = 100) String nev) {

@@ -47,7 +47,6 @@ public interface MoziMapper {
     @Mapping(target = "ar", source = "jegy.ar")
     JegyfoglalasResponse foglalas(JegyfoglalasEntity entity);
 
-    // A kifizetett foglalásból kiállított mozijegy, a film és az előadás minden adatával.
     @Mapping(target = "foglalasKod", source = "entity.foglalasKod")
     @Mapping(target = "filmCim", source = "entity.film.cim")
     @Mapping(target = "logoUrl", source = "entity.film.logoUrl")

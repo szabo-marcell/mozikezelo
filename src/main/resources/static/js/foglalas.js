@@ -1,4 +1,3 @@
-// foglalas.html oldal szkriptje (a CSP miatt nincs inline JavaScript).
 fejlec("foglalas.html");
 
 const urlap = document.getElementById("foglalas");
@@ -8,11 +7,10 @@ const keszResz = document.getElementById("kesz");
 let eloadasId = parameter("eloadas");
 const folytatando = parameter("rendeles");
 
-let jegyek = [];        // választható jegytípusok (név, ár, feltétel)
-let kitoltott = null;   // a beküldött űrlap adatai a fizetési lépéshez
-let rendelesId = null;  // a mentett félbehagyott rendelés azonosítója
+let jegyek = [];
+let kitoltott = null;
+let rendelesId = null;
 
-// Foglalni csak bejelentkezve lehet.
 if (bejelentkezesSzukseges()) {
     const indulas = folytatando ? rendelesFolytatasa(folytatando)
         : eloadasId ? kivalasztottEloadas(eloadasId) : uresUrlap();
@@ -43,7 +41,6 @@ async function rendelesMentese(adatok) {
         try {
             return await api("/api/felbehagyott-rendelesek/" + rendelesId, { method: "PUT", body });
         } catch {
-            // Ha közben törölték (pl. másik lapon), újként mentjük.
         }
     }
     return api("/api/felbehagyott-rendelesek", { method: "POST", body });
@@ -112,7 +109,6 @@ function szabadSzekek(szabad, ferohely) {
     regi.replaceWith(select);
 }
 
-// 1. lépés → 2. lépés
 urlap.addEventListener("submit", async e => {
     e.preventDefault();
     if (!urlap.reportValidity()) return;
@@ -154,7 +150,6 @@ document.getElementById("modosit").addEventListener("click", () => {
     urlap.hidden = false;
 });
 
-// 2. lépés: fizetés. Banki adatot nem kérünk, a fizetést sikeresnek tekintjük, majd rögzítjük a foglalást.
 document.getElementById("fizet").addEventListener("click", async () => {
     const gomb = document.getElementById("fizet");
     gomb.disabled = true;
@@ -175,7 +170,6 @@ document.getElementById("fizet").addEventListener("click", async () => {
         uzenet(doboz, h.message + " A fizetés nem történt meg.");
         fizetesResz.hidden = true;
         urlap.hidden = false;
-        // Ha közben elkelt a szék, frissítjük a szabad székek listáját.
         if (eloadasId) {
             const r = await api("/api/napi-beosztas/" + encodeURIComponent(eloadasId)).catch(() => null);
             if (r) szabadSzekek(r.szabadSzekek, r.ferohely);
@@ -186,9 +180,8 @@ document.getElementById("fizet").addEventListener("click", async () => {
     }
 });
 
-// 3. lépés
 function visszaigazolas(f) {
-    rendelesId = null; // a szerver a kifizetett rendelést törölte a félbehagyottak közül
+    rendelesId = null;
     document.getElementById("kod").textContent = f.foglalasKod;
     document.getElementById("jegy-link").href = "jegyeim.html?kod=" + encodeURIComponent(f.foglalasKod);
     document.getElementById("visszaigazolas").replaceChildren(adatlista([

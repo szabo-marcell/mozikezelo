@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class BejelentkezesVedelem {
 
-    // Ennyi bejegyzés fölött a lejárt bejegyzéseket kitakarítjuk, hogy a memória ne nőjön korlátlanul.
     private static final int TAKARITASI_KUSZOB = 10_000;
 
     private final Map<String, Szamlalo> emailSzerint = new ConcurrentHashMap<>();

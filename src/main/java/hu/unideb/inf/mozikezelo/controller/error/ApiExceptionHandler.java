@@ -77,16 +77,12 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDatabaseConflict(DataIntegrityViolationException exception) {
-        // A párhuzamos kérések az előzetes ellenőrzésen egyszerre is átjuthatnak.
-        // Az adatbázis-kényszer hibájából nem küldünk SQL-t vagy belső részleteket a kliensnek.
-        // Pl. két felhasználó egyszerre foglalja ugyanazt a széket.
         return problem(HttpStatus.CONFLICT, "adatbazis-utkozes", "Adatütközés",
                 "Az adatok ütköznek egy egyediségi vagy hivatkozási adatbázis-korlátozással (pl. a szék időközben foglalt lett).");
     }
 
     @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
     public ProblemDetail handleAuthentication(org.springframework.security.core.AuthenticationException exception) {
-        // Rossz jelszó és nem létező felhasználó ugyanazt a választ kapja, hogy ne lehessen felhasználóneveket kipuhatolni.
         return problem(HttpStatus.UNAUTHORIZED, "hibas-bejelentkezes", "Sikertelen bejelentkezés",
                 "Hibás felhasználónév vagy jelszó.");
     }
@@ -125,7 +121,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         if (exception.isForReturnValue()) {
             return handleExceptionInternal(exception, handleUnexpected(exception), headers, status, request);
         }
-        // Például a @Positive path paraméter és az @Valid kérés együttes validációja.
         List<FieldViolation> errors = new ArrayList<>();
         exception.getParameterValidationResults().forEach(result -> {
             if (result instanceof ParameterErrors parameterErrors) {

@@ -27,14 +27,11 @@ import java.time.LocalTime;
 @ConditionalOnProperty(prefix = "app.demo-data", name = "enabled", havingValue = "true")
 public class DemoAdatFeltolto implements CommandLineRunner {
 
-    // A filmek plakátjai, illetve a saját készítésű logóplakátok (a mozijegyen jelennek meg).
     private static final String PLAKATOK = "/img/plakatok/";
     private static final String LOGOK = "/img/filmek/";
-    // Reklám + előzetesek a film előtt, illetve takarítás két előadás között (percben).
     private static final int REKLAM_PERC = 15;
     private static final int TAKARITAS_PERC = 15;
     private static final int UTOLSO_BEFEJEZES_PERC = 23 * 60 + 45;
-    // Ettől az időponttól a szinkronizált filmeket is eredeti nyelven (felirattal) vetítjük.
     private static final LocalTime ESTI_EREDETI_NYELVU = LocalTime.of(20, 0);
 
     private final MoziRepository moziRepository;
@@ -65,13 +62,11 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         TeremEntity kek = terem("Kék terem", 1, 60, VetitesTipus.KET_D);
         TeremEntity kamara = terem("Kamaraterem", 1, 30, VetitesTipus.KET_D);
 
-        // Pontosan négyféle jegy létezik; a feltételt a JegyTipus határozza meg.
         JegyEntity teljes = jegyRepository.save(new JegyEntity(JegyTipus.TELJES_ARU, 2990));
         jegyRepository.save(new JegyEntity(JegyTipus.DIAK, 2390));
         jegyRepository.save(new JegyEntity(JegyTipus.NYUGDIJAS, 2190));
         jegyRepository.save(new JegyEntity(JegyTipus.GYEREK, 1990));
 
-        // A mozikban jelenleg vetített filmek. Szinkronszínész csak a szinkronizált külföldi filmeknél van.
         FilmEntity hogyan2 = film("Hogyan tudnék élni nélküled? 2.", LocalDate.of(2026, 11, 12), 114,
                 "romantikus", "Magyarország", "InterCom", "IKO Production",
                 "Törőcsik Franciska", "Dyga Zsombor", null, "hogyan-tudnek-elni-nelkuled-2.png",
@@ -174,7 +169,6 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         f.setRendezo(rendezo);
         f.setFoszinkronszinesz(foszinkronszinesz);
         f.setKepUrl(PLAKATOK + plakat);
-        // A logó neve megegyezik a plakátéval, csak SVG kiterjesztéssel.
         f.setLogoUrl(LOGOK + plakat.substring(0, plakat.lastIndexOf('.')) + ".svg");
         f.setLeiras(leiras);
         return filmRepository.save(f);
@@ -207,8 +201,6 @@ public class DemoAdatFeltolto implements CommandLineRunner {
         b.setDatum(datum);
         b.setKezdes(kezdes);
         b.setBefejezes(befejezes);
-        // Szinkron nélküli (magyar vagy feliratos) film mindig eredeti nyelvű; a szinkronos filmek
-        // esti előadásai eredeti nyelven, felirattal mennek.
         b.setEredetiNyelvu(film.getFoszinkronszinesz() == null || !kezdes.isBefore(ESTI_EREDETI_NYELVU));
         b.setJegy(jegy);
         beosztasRepository.save(b);

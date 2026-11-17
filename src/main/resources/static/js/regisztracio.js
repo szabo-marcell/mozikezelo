@@ -1,4 +1,3 @@
-// regisztracio.html oldal szkriptje (a CSP miatt nincs inline JavaScript).
 fejlec("");
 const urlap = document.getElementById("regisztracio");
 const doboz = document.getElementById("uzenet");
@@ -22,7 +21,6 @@ urlap.addEventListener("submit", async e => {
                 szuletesiDatum: urlap.szuletesiDatum.value,
             },
         });
-        // Sikeres regisztráció után azonnal be is jelentkeztetjük.
         await api("/auth/bejelentkezes", {
             method: "POST",
             body: { email: urlap.email.value.trim(), jelszo: urlap.jelszo.value },

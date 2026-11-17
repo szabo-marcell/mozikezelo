@@ -117,9 +117,7 @@ class MoziApiTests {
                 .andExpect(jsonPath("$[0].foglalasUrl").value("/api/napi-beosztas/" + beosztasId + "/foglalas"));
     }
 
-    // Regisztrál és bejelentkezik egy felhasználó, akinek a születési év alapján számolt kora "kor" év.
     private String tokenKorral(String email, int kor) throws Exception {
-        // December 31-i születésnap: csak az év számít, a hónap/nap nem.
         LocalDate szul = LocalDate.of(LocalDate.now().getYear() - kor, 12, 31);
         mvc.perform(post("/auth/regisztracio").contentType(MediaType.APPLICATION_JSON).content("""
                         {"nev":"Teszt","email":"%s","jelszo":"titkos123","szuletesiDatum":"%s"}""".formatted(email, szul)))
@@ -127,7 +125,6 @@ class MoziApiTests {
         return belep(email, "titkos123");
     }
 
-    // Bejelentkezés; a token a HttpOnly sütiből jön (a válasz törzsében nincs), a tesztek Bearer-fejlécben küldik.
     private String belep(String email, String jelszo) throws Exception {
         MockHttpServletResponse valasz = mvc.perform(post("/auth/bejelentkezes")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -155,11 +152,9 @@ class MoziApiTests {
         String rendeles = """
                 {"filmCim":"Teszt Film","datum":"%s","kezdes":"18:00","jegyNev":"%s","szekSzam":%d}""";
 
-        // Bejelentkezés nélkül nem érhető el.
         mvc.perform(get("/api/felbehagyott-rendelesek")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/jegyfoglalasok/jegyek")).andExpect(status().isUnauthorized());
 
-        // "Tovább a fizetéshez": félbehagyott rendelés jön létre; ugyanarra a székre újra mentve nem duplikálódik.
         String valasz = mvc.perform(post("/api/felbehagyott-rendelesek").header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON).content(rendeles.formatted(holnap, "Diák", 2)))
                 .andExpect(status().isCreated())
@@ -174,7 +169,6 @@ class MoziApiTests {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].jegyNev").value("Teljes árú"));
 
-        // Nem létező szék nem menthető; más felhasználó rendelése nem látható és nem törölhető.
         mvc.perform(post("/api/felbehagyott-rendelesek").header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON).content(rendeles.formatted(holnap, "Diák", 9)))
                 .andExpect(status().isBadRequest());
@@ -183,7 +177,6 @@ class MoziApiTests {
         mvc.perform(delete("/api/felbehagyott-rendelesek/" + id).header("Authorization", masik))
                 .andExpect(status().isNotFound());
 
-        // Módosítás másik székre, majd ha a széket más lefoglalja, a rendelés nem folytatható.
         mvc.perform(put("/api/felbehagyott-rendelesek/" + id).header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON).content(rendeles.formatted(holnap, "Diák", 3)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.szekSzam").value(3));
@@ -191,7 +184,6 @@ class MoziApiTests {
         mvc.perform(get("/api/felbehagyott-rendelesek/" + id).header("Authorization", auth))
                 .andExpect(jsonPath("$.folytathato").value(false));
 
-        // Másik székre módosítva kifizetjük: a rendelés eltűnik a félbehagyottak közül, és jegy lesz belőle.
         mvc.perform(put("/api/felbehagyott-rendelesek/" + id).header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON).content(rendeles.formatted(holnap, "Diák", 1)))
                 .andExpect(status().isOk());
@@ -212,19 +204,16 @@ class MoziApiTests {
         String kod = objectMapper.readTree(jegyek).get(0).get("foglalasKod").asString();
         mvc.perform(get("/api/jegyfoglalasok/" + kod + "/jegy").header("Authorization", auth))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.foglalasKod").value(kod));
-        // Más jegye nem kérhető le.
         mvc.perform(get("/api/jegyfoglalasok/" + kod + "/jegy").header("Authorization", masik))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void jegyFeltetelekEllenorzeseSzuletesiEvAlapjan() throws Exception {
-        // Bejelentkezés nélkül mind a négy jegytípus látszik.
         mvc.perform(get("/api/napi-beosztas/" + beosztasId))
                 .andExpect(jsonPath("$.valaszthatoJegyek[*].tipus",
                         containsInAnyOrder("GYEREK", "DIAK", "NYUGDIJAS", "TELJES_ARU")));
 
-        // A jegyek ár szerint rendezve: Gyerek, Nyugdíjas, Diák, Teljes árú.
         String otEves = tokenKorral("ot@example.com", 5);
         mvc.perform(get("/api/napi-beosztas/" + beosztasId).header("Authorization", otEves))
                 .andExpect(jsonPath("$.valaszthatoJegyek[*].tipus", contains("GYEREK", "TELJES_ARU")));
@@ -257,7 +246,6 @@ class MoziApiTests {
         String nyugdijas = tokenKorral("nyugdijas@example.com", 65);
         mvc.perform(get("/api/napi-beosztas/" + beosztasId).header("Authorization", nyugdijas))
                 .andExpect(jsonPath("$.valaszthatoJegyek[*].tipus", contains("NYUGDIJAS", "TELJES_ARU")));
-        // A Teljes árú jegyet bárki megveheti.
         foglalas(nyugdijas, "Teljes árú", 3, 201);
     }
 
@@ -278,7 +266,6 @@ class MoziApiTests {
                 {"cim":"Új film","bemutatoDatum":"2026-12-01","hosszPerc":%d,"mufaj":"vígjáték",
                  "gyartoOrszag":"Magyarország","forgalmazo":"F","gyartoCeg":"G","foszereplo":"Sz","rendezo":"%s"}""";
 
-        // Felvétel: token nélkül 401, sima felhasználóként 403, adminként 201.
         mvc.perform(post("/api/filmek").contentType(MediaType.APPLICATION_JSON).content(ujFilm.formatted(90, "R")))
                 .andExpect(status().isUnauthorized());
         mvc.perform(post("/api/filmek").header("Authorization", felhasznaloAuth)
@@ -294,7 +281,6 @@ class MoziApiTests {
                         .contentType(MediaType.APPLICATION_JSON).content("{\"cim\":\"\"}"))
                 .andExpect(status().isBadRequest());
 
-        // Módosítás: sima felhasználó nem, admin igen.
         mvc.perform(put("/api/filmek/" + ujId).header("Authorization", felhasznaloAuth)
                         .contentType(MediaType.APPLICATION_JSON).content(ujFilm.formatted(95, "Másik Rendező")))
                 .andExpect(status().isForbidden());
@@ -308,14 +294,12 @@ class MoziApiTests {
                         .contentType(MediaType.APPLICATION_JSON).content(ujFilm.formatted(95, "R")))
                 .andExpect(status().isNotFound());
 
-        // Beosztott film hossza nem változhat (a vetítések vége ebből számolódott).
         Long tesztFilmId = filmRepository.findAll().stream()
                 .filter(f -> f.getCim().equals("Teszt Film")).findFirst().orElseThrow().getId();
         mvc.perform(put("/api/filmek/" + tesztFilmId).header("Authorization", adminAuth)
                         .contentType(MediaType.APPLICATION_JSON).content(ujFilm.formatted(150, "R")))
                 .andExpect(status().isConflict());
 
-        // Törlés: sima felhasználó nem, admin igen; beosztott film nem törölhető.
         mvc.perform(delete("/api/filmek/" + ujId)).andExpect(status().isUnauthorized());
         mvc.perform(delete("/api/filmek/" + ujId).header("Authorization", felhasznaloAuth))
                 .andExpect(status().isForbidden());
@@ -327,7 +311,6 @@ class MoziApiTests {
         mvc.perform(delete("/api/filmek/" + ujId).header("Authorization", adminAuth))
                 .andExpect(status().isNotFound());
 
-        // Máshoz az admin sem nyúlhat: termet módosítani nem lehet.
         mvc.perform(put("/api/termek/" + teremId).header("Authorization", adminAuth)
                         .contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isMethodNotAllowed());
@@ -358,10 +341,8 @@ class MoziApiTests {
         masikTerem.setFerohely(100);
         masikTerem.setVetitesTipus(VetitesTipus.HAROM_D);
         Long masikTeremId = teremRepository.save(masikTerem).getId();
-        // A Teszt Film 100 perces, a beállításban holnap 18:00–20:00 megy a Kamarateremben.
         Long filmId = filmRepository.findAll().getFirst().getId();
 
-        // Jogosultság: token nélkül 401, sima felhasználóként 403.
         mvc.perform(post("/api/napi-beosztas").contentType(MediaType.APPLICATION_JSON)
                         .content(vetites(filmId, teremId, holnap, "10:00")))
                 .andExpect(status().isUnauthorized());
@@ -369,7 +350,6 @@ class MoziApiTests {
                         .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, "10:00")))
                 .andExpect(status().isForbidden());
 
-        // A vége automatikusan: kezdés + 100 perc film + 15 perc plusz idő; jegy nélkül teljes árú.
         String valasz = mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
                         .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, "16:00")))
                 .andExpect(status().isCreated())
@@ -378,23 +358,19 @@ class MoziApiTests {
                 .andReturn().getResponse().getContentAsString();
         long ujId = objectMapper.readTree(valasz).get("id").asLong();
 
-        // Ugyanabban a teremben átfedés nem lehet (sem a 16:00–17:55, sem a 18:00–20:00 vetítéssel).
         for (String kezdes : new String[]{"17:00", "15:00", "17:50", "19:59"}) {
             mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
                             .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, kezdes)))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.detail").value(containsString("Időpont-ütközés")));
         }
-        // Az egyik vége után közvetlenül kezdődhet a következő.
         mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
                         .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, "20:00")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.befejezes").value("21:55:00"));
-        // Másik teremben ugyanabban az időben mehet film.
         mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
                         .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, masikTeremId, holnap, "18:30")))
                 .andExpect(status().isCreated());
-        // Éjfél után véget érő és múltbeli vetítés nem vehető fel.
         mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
                         .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, masikTeremId, holnap, "23:00")))
                 .andExpect(status().isConflict());
@@ -408,7 +384,6 @@ class MoziApiTests {
         mvc.perform(get("/api/napi-beosztas").param("datum", holnap.toString()))
                 .andExpect(jsonPath("$", hasSize(4)));
 
-        // Törlés: sima felhasználó nem; lefoglalt vetítés nem; foglalás nélküli igen.
         mvc.perform(delete("/api/napi-beosztas/" + ujId).header("Authorization", felhasznaloAuth))
                 .andExpect(status().isForbidden());
         foglalas(felhasznaloAuth, "Diák", 1, 201);
@@ -418,7 +393,6 @@ class MoziApiTests {
                 .andExpect(status().isNoContent());
         mvc.perform(delete("/api/napi-beosztas/" + ujId).header("Authorization", adminAuth))
                 .andExpect(status().isNotFound());
-        // A törölt vetítés helyére már felvehető másik.
         mvc.perform(post("/api/napi-beosztas").header("Authorization", adminAuth)
                         .contentType(MediaType.APPLICATION_JSON).content(vetites(filmId, teremId, holnap, "16:05")))
                 .andExpect(status().isCreated());
@@ -433,7 +407,6 @@ class MoziApiTests {
 
     @Test
     void regisztracioBelepesProfilFoglalasEsVisszamondas() throws Exception {
-        // 21 éves (születési év alapján), így Diák jegyet foglalhat.
         String szul = LocalDate.of(LocalDate.now().getYear() - 21, 1, 1).toString();
         mvc.perform(post("/auth/regisztracio").contentType(MediaType.APPLICATION_JSON).content("""
                         {"nev":"Anna","email":"anna@example.com","jelszo":"titkos123","szuletesiDatum":"%s"}""".formatted(szul)))
@@ -453,7 +426,6 @@ class MoziApiTests {
         mvc.perform(get("/api/felhasznalo/profil").header("Authorization", auth))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.email").value("anna@example.com"));
 
-        // Előadás kiválasztása, majd foglalás onnan: csak jegytípus és szék.
         mvc.perform(get("/api/napi-beosztas/" + beosztasId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.szabadSzekek", contains(1, 2, 3)))
@@ -472,7 +444,6 @@ class MoziApiTests {
         mvc.perform(get("/api/napi-beosztas/" + beosztasId))
                 .andExpect(jsonPath("$.szabadSzekek", contains(1, 3)));
 
-        // Ugyanaz a szék nem foglalható újra; nem létező szék hibás kérés.
         String teljesFoglalas = """
                 {"filmCim":"Teszt Film","datum":"%s","kezdes":"18:00","jegyNev":"Diák","szekSzam":%d}""";
         mvc.perform(post("/api/jegyfoglalasok").header("Authorization", auth).contentType(MediaType.APPLICATION_JSON)
@@ -485,7 +456,6 @@ class MoziApiTests {
         mvc.perform(get("/api/jegyfoglalasok").header("Authorization", auth))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(2)));
 
-        // Visszamondás rendelésazonosítóval, illetve az összes adattal.
         mvc.perform(delete("/api/jegyfoglalasok/" + kod).header("Authorization", auth)).andExpect(status().isNoContent());
         mvc.perform(delete("/api/jegyfoglalasok/" + kod).header("Authorization", auth)).andExpect(status().isNotFound());
         mvc.perform(post("/api/jegyfoglalasok/lemondas").header("Authorization", auth).contentType(MediaType.APPLICATION_JSON)
@@ -500,16 +470,13 @@ class MoziApiTests {
         Cookie suti = new Cookie(AuthSutik.TOKEN_SUTI, auth.substring("Bearer ".length()));
         String foglalasTorzs = "{\"jegyNev\":\"Diák\",\"szekSzam\":1}";
 
-        // A böngésző a HttpOnly sütivel hitelesít.
         mvc.perform(get("/api/felhasznalo/profil").cookie(suti))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.email").value("suti@example.com"));
 
-        // Sütivel hitelesített módosító kérés CSRF-token nélkül tilos (más oldalról indított kérés ellen).
         mvc.perform(post("/api/napi-beosztas/" + beosztasId + "/foglalas").cookie(suti)
                         .contentType(MediaType.APPLICATION_JSON).content(foglalasTorzs))
                 .andExpect(status().isForbidden());
 
-        // Az XSRF-TOKEN sütit a frontend olvassa ki, és fejlécben küldi vissza.
         Cookie xsrf = mvc.perform(get("/auth/csrf")).andExpect(status().isNoContent())
                 .andExpect(cookie().httpOnly("XSRF-TOKEN", false))
                 .andReturn().getResponse().getCookie("XSRF-TOKEN");
@@ -519,7 +486,6 @@ class MoziApiTests {
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString()).get("foglalasKod").asString();
 
-        // Jegyeim: a még el nem kezdődött előadás jegye visszamondható, a felületről is.
         mvc.perform(get("/api/jegyfoglalasok/jegyek").cookie(suti))
                 .andExpect(jsonPath("$[0].foglalasKod").value(kod))
                 .andExpect(jsonPath("$[0].lemondhato").value(true));
@@ -529,7 +495,6 @@ class MoziApiTests {
                 .andExpect(status().isNoContent());
         mvc.perform(get("/api/jegyfoglalasok/jegyek").cookie(suti)).andExpect(jsonPath("$", hasSize(0)));
 
-        // Más kulccsal aláírt, illetve kibocsátó/célközönség nélküli token nem fogadható el; a hibás süti törlődik.
         String hamis = Jwts.builder().subject("suti@example.com").claim("ver", 0)
                 .expiration(new java.util.Date(System.currentTimeMillis() + 60_000))
                 .signWith(Jwts.SIG.HS256.key().build()).compact();
@@ -542,7 +507,6 @@ class MoziApiTests {
         mvc.perform(get("/api/felhasznalo/profil").header("Authorization", "Bearer " + kibocsatoNelkul))
                 .andExpect(status().isUnauthorized());
 
-        // Kijelentkezés: a sütik törlődnek, és a korábbi token (máshol, pl. ellopva) sem használható tovább.
         mvc.perform(post("/auth/kijelentkezes").cookie(suti, xsrf).header("X-XSRF-TOKEN", xsrf.getValue()))
                 .andExpect(status().isNoContent())
                 .andExpect(cookie().maxAge(AuthSutik.TOKEN_SUTI, 0))
@@ -550,7 +514,6 @@ class MoziApiTests {
         mvc.perform(get("/api/felhasznalo/profil").cookie(suti)).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/felhasznalo/profil").header("Authorization", auth)).andExpect(status().isUnauthorized());
 
-        // Újra bejelentkezve új, érvényes tokent kap.
         mvc.perform(get("/api/felhasznalo/profil").header("Authorization", belep("suti@example.com", "titkos123")))
                 .andExpect(status().isOk());
     }

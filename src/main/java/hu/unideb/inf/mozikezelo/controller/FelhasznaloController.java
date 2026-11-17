@@ -18,7 +18,6 @@ public class FelhasznaloController {
 
     private final FelhasznaloService service;
 
-
     @GetMapping("/profil")
     public FelhasznaloResponse profil(@AuthenticationPrincipal FelhasznaloEntity felhasznalo) {
         return service.profil(felhasznalo.getId());

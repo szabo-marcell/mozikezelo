@@ -35,35 +35,30 @@ public class NapiBeosztasController {
     private final NapiBeosztasService service;
     private final JegyfoglalasService foglalasService;
 
-    // Keresés nap szerint, pl. /api/napi-beosztas?datum=2026-11-13
     @GetMapping
     public List<NapiBeosztasResponse> napSzerint(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datum) {
         return service.napra(datum);
     }
 
-    // Új vetítés felvétele (csak ADMIN). A befejezést a szerver számolja; teremütközés esetén 409.
     @PostMapping
     public ResponseEntity<NapiBeosztasResponse> letrehoz(@Valid @RequestBody NapiBeosztasRequest request) {
         NapiBeosztasResponse vetites = service.letrehoz(request);
         return ResponseEntity.created(URI.create(vetites.reszletekUrl())).body(vetites);
     }
 
-    // Vetítés törlése (csak ADMIN). Elkezdődött vagy foglalt jeggyel rendelkező vetítés nem törölhető.
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void torol(@PathVariable @Positive Long id) {
         service.torol(id);
     }
 
-    // Egy előadás kiválasztása a listából. Tokennel csak a felhasználó által igényelhető jegyek jelennek meg.
     @GetMapping("/{id}")
     public EloadasReszletekResponse eloadas(@PathVariable @Positive Long id,
                                             @AuthenticationPrincipal FelhasznaloEntity felhasznalo) {
         return service.reszletek(id, felhasznalo == null ? null : felhasznalo.getSzuletesiDatum());
     }
 
-    // Átlépés a jegyfoglalásba: film, időpont és terem az előadásból adott.
     @PostMapping("/{id}/foglalas")
     public ResponseEntity<JegyfoglalasResponse> foglalas(@PathVariable @Positive Long id,
                                                          @Valid @RequestBody EloadasFoglalasRequest request,

@@ -2,7 +2,6 @@ package hu.unideb.inf.mozikezelo.service.exception;
 
 import java.time.Duration;
 
-// Túl sok sikertelen bejelentkezési kísérlet: 429 Too Many Requests, Retry-After fejléccel.
 public class TulSokProbalkozasException extends RuntimeException {
     private final long varakozasMasodperc;
 

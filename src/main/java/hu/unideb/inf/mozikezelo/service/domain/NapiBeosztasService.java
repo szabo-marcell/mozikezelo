@@ -84,7 +84,6 @@ public class NapiBeosztasService {
     public NapiBeosztasResponse letrehoz(NapiBeosztasRequest request) {
         FilmEntity film = filmek.findById(request.filmId())
                 .orElseThrow(() -> new ErforrasNotFoundException("Nem található film: " + request.filmId()));
-        // A terem zárolása miatt két párhuzamos felvétel nem juthat át egyszerre az ütközésvizsgálaton.
         TeremEntity terem = termek.findByIdZarolva(request.teremId())
                 .orElseThrow(() -> new ErforrasNotFoundException("Nem található terem: " + request.teremId()));
         JegyEntity jegy = request.jegyId() == null
@@ -121,7 +120,6 @@ public class NapiBeosztasService {
         beosztas.setDatum(datum);
         beosztas.setKezdes(kezdes);
         beosztas.setBefejezes(befejezes);
-        // Szinkron nélküli (magyar vagy csak feliratos) film mindig eredeti nyelvű.
         beosztas.setEredetiNyelvu(film.getFoszinkronszinesz() == null || request.eredetiNyelvu());
         beosztas.setJegy(jegy);
         return mapper.beosztas(beosztasok.saveAndFlush(beosztas));

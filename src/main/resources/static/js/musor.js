@@ -1,8 +1,6 @@
-// musor.html oldal szkriptje: vetítések felvétele a napi beosztásba és törlése (csak ADMIN).
-// Az ütközést és a jogosultságot a szerver ellenőrzi; a felület előre jelzi, ha az időpont foglalt.
 fejlec("musor.html");
 
-const PLUSZ_PERC = 15; // reklám/előzetes, a szerverrel azonos (NapiBeosztasService.PLUSZ_PERC)
+const PLUSZ_PERC = 15;
 const doboz = document.getElementById("uzenet");
 const tartalom = document.getElementById("tartalom");
 const napMezo = document.getElementById("nap");
@@ -19,7 +17,7 @@ const termekLista = document.getElementById("termek");
 
 let filmek = [];
 let termek = [];
-let vetitesek = []; // a kiválasztott nap vetítései
+let vetitesek = [];
 
 const perc = t => { const [o, p] = t.split(":").map(Number); return o * 60 + p; };
 const idoPercbol = p => String(Math.floor(p / 60)).padStart(2, "0") + ":" + String(p % 60).padStart(2, "0");
@@ -60,7 +58,6 @@ function valasztoFeltoltese(jegyek) {
         elem("option", "", j.nev + " – " + forint(j.ar)), { value: j.id, selected: j.tipus === "TELJES_ARU" })));
 }
 
-// ---------- Nap kiválasztása ----------
 napMezo.addEventListener("change", () => { if (napMezo.value) betolt(); });
 document.getElementById("elozo-nap").addEventListener("click", () => napLeptetes(-1));
 document.getElementById("kovetkezo-nap").addEventListener("click", () => napLeptetes(1));
@@ -85,7 +82,6 @@ async function betolt() {
     }
 }
 
-// ---------- Beosztás termenként ----------
 function megjelenit() {
     termekLista.replaceChildren();
     const most = new Date();
@@ -145,7 +141,6 @@ async function torol(v, gomb) {
     }
 }
 
-// ---------- Új vetítés: élő ellenőrzés ----------
 for (const m of [filmMezo, teremMezo, kezdesMezo]) m.addEventListener("input", ellenoriz);
 filmMezo.addEventListener("change", nyelvBeallitasa);
 teremMezo.addEventListener("change", kezdesJavaslat);
@@ -154,7 +149,6 @@ function kivalasztottFilm() {
     return filmek.find(f => String(f.id) === filmMezo.value);
 }
 
-// Szinkron nélküli (magyar vagy csak feliratos) film mindig eredeti nyelvű.
 function nyelvBeallitasa() {
     const f = kivalasztottFilm();
     const tipp = document.getElementById("nyelv-tipp");
@@ -168,7 +162,6 @@ function nyelvBeallitasa() {
     }
 }
 
-// Üres kezdésnél a terem aznapi utolsó vetítése utáni első 5 perces időpontot ajánljuk fel.
 function kezdesJavaslat() {
     if (kezdesMezo.value || !teremMezo.value) return ellenoriz();
     const sajat = vetitesek.filter(v => String(v.teremId) === teremMezo.value);
@@ -234,7 +227,6 @@ urlap.addEventListener("submit", async e => {
         await betolt();
         kezdesJavaslat();
     } catch (h) {
-        // Pl. időközben más admin vett fel ütköző vetítést: frissítjük a listát is.
         uzenet(doboz, h.message);
         await betolt();
     } finally {

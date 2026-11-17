@@ -46,18 +46,15 @@ public class FilmEntity extends AuditEntity {
     @Column(nullable = false, length = 100)
     private String rendezo;
 
-    // A főszereplő magyar hangja. Eredetileg is magyar nyelvű filmnél üres.
     @Column(length = 100)
     private String foszinkronszinesz;
 
     @Column(length = 2000)
     private String leiras;
 
-    // A film plakátja az alkalmazáson belül (pl. /img/plakatok/ebenezer.webp).
     @Column(name = "kep_url", length = 300)
     private String kepUrl;
 
-    // Saját készítésű logóplakát (SVG), ez kerül a mozijegy bal felső sarkába.
     @Column(name = "logo_url", length = 300)
     private String logoUrl;
 }

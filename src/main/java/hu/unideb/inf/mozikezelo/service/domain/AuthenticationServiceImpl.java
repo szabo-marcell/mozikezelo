@@ -59,11 +59,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public TokenResponse bejelentkezes(FelhasznaloLoginRequest dto, String ip) {
         String email = normalizalEmail(dto.email());
         String kliensIp = ip == null ? "ismeretlen" : ip;
-        // Zárolt fiók vagy IP-cím esetén 429, még a jelszó ellenőrzése előtt.
         bejelentkezesVedelem.ellenoriz(email, kliensIp);
         Authentication auth;
         try {
-            // Hibás adatoknál AuthenticationException, amit a hibakezelő 401-re fordít.
             auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, dto.jelszo()));
         } catch (AuthenticationException e) {
             bejelentkezesVedelem.sikertelen(email, kliensIp);

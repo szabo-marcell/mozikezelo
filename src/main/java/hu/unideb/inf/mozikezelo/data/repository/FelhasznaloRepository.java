@@ -34,7 +34,6 @@ public interface FelhasznaloRepository extends JpaRepository<FelhasznaloEntity, 
 
     List<FelhasznaloEntity> findAllByJog_Nev(String jogNev);
 
-    // A felhasználó összes korábban kiadott tokenjét érvényteleníti.
     @Modifying(clearAutomatically = true)
     @Query("update FelhasznaloEntity f set f.tokenVerzio = f.tokenVerzio + 1 where f.id = :id")
     int tokenVerzioNovelese(@Param("id") Long id);

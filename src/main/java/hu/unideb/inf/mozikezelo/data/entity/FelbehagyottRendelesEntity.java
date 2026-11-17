@@ -24,12 +24,10 @@ public class FelbehagyottRendelesEntity extends AuditEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // FELHASZNALO 1:N FELBEHAGYOTT_RENDELES
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "felhasznalo_id", nullable = false)
     private FelhasznaloEntity felhasznalo;
 
-    // Az előadás, amelyre a rendelés szólt (ebből adott a film, a terem és az időpont).
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "napi_beosztas_id", nullable = false)
     private NapiBeosztasEntity napiBeosztas;

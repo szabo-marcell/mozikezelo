@@ -34,7 +34,6 @@ public record BelepoJegyResponse(
         String felhasznaloNev,
         Instant foglalva,
         boolean ervenyes,
-        // Igaz, amíg az előadás el nem kezdődött: addig a jegy visszamondható.
         boolean lemondhato
 ) {
 }

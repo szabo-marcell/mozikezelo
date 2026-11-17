@@ -39,7 +39,6 @@ public class AuthenticationController {
     @PostMapping("/bejelentkezes")
     public BejelentkezesResponse bejelentkezes(@Valid @RequestBody FelhasznaloLoginRequest dto,
                                                HttpServletRequest request, HttpServletResponse response) {
-        // A közvetlen kliens címe; az X-Forwarded-For fejlécet szándékosan nem használjuk, mert hamisítható.
         TokenResponse token = auth.bejelentkezes(dto, request.getRemoteAddr());
         sutik.beallit(response, token.token(), token.lejaratMasodperc());
         return new BejelentkezesResponse(token.lejaratMasodperc());
@@ -62,7 +61,6 @@ public class AuthenticationController {
     @GetMapping("/csrf")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void csrf(CsrfToken token) {
-        // A token betöltése írja ki a sütit.
         token.getToken();
     }
 }

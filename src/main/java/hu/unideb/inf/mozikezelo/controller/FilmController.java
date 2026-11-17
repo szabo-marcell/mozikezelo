@@ -25,7 +25,6 @@ public class FilmController {
 
     private final FilmService service;
 
-
     @GetMapping
     public List<FilmResponse> keres(
             @RequestParam(required = false) @Size(max = 200) String cim,
@@ -38,20 +37,17 @@ public class FilmController {
         return service.get(id);
     }
 
-    // Új film felvétele (csak ADMIN, lásd SecurityConfig).
     @PostMapping
     public ResponseEntity<FilmResponse> letrehoz(@Valid @RequestBody FilmRequest request) {
         FilmResponse film = service.letrehoz(request);
         return ResponseEntity.created(URI.create("/api/filmek/" + film.id())).body(film);
     }
 
-    // Film adatainak módosítása (csak ADMIN, lásd SecurityConfig).
     @PutMapping("/{id}")
     public FilmResponse modosit(@PathVariable @Positive Long id, @Valid @RequestBody FilmRequest request) {
         return service.modosit(id, request);
     }
 
-    // Film törlése (csak ADMIN, lásd SecurityConfig). Beosztott vagy foglalt film nem törölhető.
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void torol(@PathVariable @Positive Long id) {

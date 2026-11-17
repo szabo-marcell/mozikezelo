@@ -15,7 +15,6 @@ public class UserServiceImpl implements UserService {
         this.repo = repo;
     }
 
-
     @Override
     public UserDetailsService getUserDetailsService() {
         return username -> repo.findByEmail(username)

@@ -24,7 +24,6 @@ public class TokenService {
 
     static final String KIBOCSATO = "mozikezelo";
     static final String CELKOZONSEG = "mozikezelo-web";
-    // A felhasználó tokenVerzio mezőjének értéke a kiállításkor.
     static final String VERZIO_CLAIM = "ver";
 
     private final SecretKey secretKey;
@@ -46,7 +45,6 @@ public class TokenService {
                 .build();
     }
 
-    // Üres vagy gyenge kulccsal az alkalmazás el sem indul.
     private static SecretKey kulcs(String secret) {
         if (secret == null || secret.isBlank()) {
             throw new IllegalStateException("Nincs megadva a JWT aláírókulcs. Állítsd be az APP_JWT_SECRET környezeti "

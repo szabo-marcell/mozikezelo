@@ -16,7 +16,6 @@ public interface JegyfoglalasRepository extends JpaRepository<JegyfoglalasEntity
     @EntityGraph(attributePaths = {"film", "terem", "jegy", "napiBeosztas"})
     Page<JegyfoglalasEntity> findAllByFelhasznalo_Id(Long felhasznaloId, Pageable pageable);
 
-    // "Jegyeim": a felhasználó összes jegye a film és az előadás adataival együtt.
     @EntityGraph(attributePaths = {"film", "terem", "jegy", "napiBeosztas", "felhasznalo"})
     List<JegyfoglalasEntity> findAllByFelhasznalo_IdOrderByNapiBeosztas_DatumAscNapiBeosztas_KezdesAsc(Long felhasznaloId);
 
@@ -26,7 +25,6 @@ public interface JegyfoglalasRepository extends JpaRepository<JegyfoglalasEntity
     @EntityGraph(attributePaths = {"film", "terem", "jegy", "napiBeosztas", "felhasznalo"})
     Optional<JegyfoglalasEntity> findByFoglalasKod(String foglalasKod);
 
-    // Visszamondás az összes foglalási adat megadásával.
     @EntityGraph(attributePaths = {"film", "terem", "jegy", "napiBeosztas"})
     Optional<JegyfoglalasEntity> findByFelhasznalo_IdAndNapiBeosztas_IdAndSzekSzamAndJegy_Id(
             Long felhasznaloId, Long napiBeosztasId, int szekSzam, Long jegyId);

@@ -9,9 +9,7 @@ public interface AuthenticationService {
 
     FelhasznaloResponse regisztracio(FelhasznaloCreateRequest dto);
 
-    // Az IP-cím a próbálkozások korlátozásához kell (BejelentkezesVedelem).
     TokenResponse bejelentkezes(FelhasznaloLoginRequest dto, String ip);
 
-    // A felhasználó összes kiadott tokenjét visszavonja.
     void kijelentkezes(Long felhasznaloId);
 }

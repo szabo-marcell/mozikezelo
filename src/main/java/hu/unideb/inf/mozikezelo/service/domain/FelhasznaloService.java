@@ -15,7 +15,6 @@ public class FelhasznaloService {
     private final FelhasznaloRepository felhasznalok;
     private final FelhasznaloMapper mapper;
 
-    // A bejelentkezett felhasználó saját profilja.
     public FelhasznaloResponse profil(Long felhasznaloId) {
         return felhasznalok.findById(felhasznaloId)
                 .map(mapper::toResponse)

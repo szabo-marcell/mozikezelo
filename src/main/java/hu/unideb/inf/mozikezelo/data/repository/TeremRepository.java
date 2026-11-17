@@ -13,8 +13,6 @@ import java.util.Optional;
 
 public interface TeremRepository extends JpaRepository<TeremEntity, Long> {
 
-    // A terem zárolása új vetítés felvételekor: két párhuzamos admin-kérés ne vehessen fel
-    // egymást átfedő vetítést ugyanabba a terembe.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT t FROM TeremEntity t WHERE t.id = :id")
     Optional<TeremEntity> findByIdZarolva(@Param("id") Long id);

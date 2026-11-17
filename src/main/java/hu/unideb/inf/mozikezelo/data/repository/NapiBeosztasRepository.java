@@ -26,7 +26,6 @@ public interface NapiBeosztasRepository extends JpaRepository<NapiBeosztasEntity
     @EntityGraph(attributePaths = {"film", "terem", "jegy"})
     Optional<NapiBeosztasEntity> findById(Long id);
 
-    // Előadás keresése a film pontos címe és az időpont alapján.
     @EntityGraph(attributePaths = {"film", "terem", "jegy"})
     List<NapiBeosztasEntity> findAllByFilm_CimIgnoreCaseAndDatumAndKezdes(String filmCim, LocalDate datum, LocalTime kezdes);
 
@@ -36,8 +35,6 @@ public interface NapiBeosztasRepository extends JpaRepository<NapiBeosztasEntity
 
     boolean existsByJegy_Id(Long jegyId);
 
-    // Az adott terem aznapi vetítései közül azok, amelyek átfedik a [kezdes, befejezes) időszakot.
-    // Ha az egyik vetítés pontosan akkor kezdődik, amikor a másik véget ér, az nem átfedés.
     @EntityGraph(attributePaths = {"film"})
     @Query("""
             SELECT b FROM NapiBeosztasEntity b
@@ -50,7 +47,6 @@ public interface NapiBeosztasRepository extends JpaRepository<NapiBeosztasEntity
                                              @Param("kezdes") LocalTime kezdes,
                                              @Param("befejezes") LocalTime befejezes);
 
-    // Ütközik-e egy új vetítés az adott terem aznapi beosztásával.
     @Query("""
             SELECT COUNT(b) > 0 FROM NapiBeosztasEntity b
             WHERE b.terem.id = :teremId AND b.datum = :datum

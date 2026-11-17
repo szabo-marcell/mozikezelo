@@ -1,4 +1,3 @@
-// index.html oldal szkriptje (a CSP miatt nincs inline JavaScript).
 fejlec("index.html");
 api("/api/mozi").then(m => {
     document.getElementById("mozi-nev").textContent = m.nev;

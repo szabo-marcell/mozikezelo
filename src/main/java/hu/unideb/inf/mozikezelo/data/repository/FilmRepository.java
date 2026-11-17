@@ -10,7 +10,6 @@ import java.util.List;
 
 public interface FilmRepository extends JpaRepository<FilmEntity, Long> {
 
-    // Pontos cím szerinti keresés (kis- és nagybetű nem számít).
     List<FilmEntity> findAllByCimIgnoreCaseOrderByBemutatoDatumDesc(String cim);
 
     List<FilmEntity> findAllByBemutatoDatumOrderByCim(LocalDate bemutatoDatum);

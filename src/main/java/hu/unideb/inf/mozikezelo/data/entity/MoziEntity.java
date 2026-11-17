@@ -22,7 +22,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MoziEntity extends AuditEntity {
 
-
     public static final Long SINGLETON_ID = 1L;
 
     @Id

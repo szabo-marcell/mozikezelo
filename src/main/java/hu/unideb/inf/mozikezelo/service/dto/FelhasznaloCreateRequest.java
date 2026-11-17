@@ -8,7 +8,6 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
-// Regisztráció: a jogosultságot a szerver állítja be (FELHASZNALO), kliens nem adhatja meg.
 public record FelhasznaloCreateRequest(
         @NotBlank @Size(max = 100) String nev,
         @NotBlank @Email @Size(max = 254) String email,

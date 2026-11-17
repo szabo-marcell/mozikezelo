@@ -1,5 +1,3 @@
-// admin.html oldal szkriptje: filmek felvétele, módosítása és törlése (csak ADMIN).
-// A jogosultságot a szerver ellenőrzi; a felület csak a kényelmet szolgálja.
 fejlec("admin.html");
 
 const doboz = document.getElementById("uzenet");
@@ -13,7 +11,7 @@ const MEZOK = ["cim", "bemutatoDatum", "hosszPerc", "mufaj", "gyartoOrszag", "fo
 const NEM_KOTELEZO = new Set(["foszinkronszinesz", "leiras", "kepUrl", "logoUrl"]);
 
 let filmek = [];
-let szerkesztett = null; // a módosított film, új filmnél null
+let szerkesztett = null;
 
 if (bejelentkezesSzukseges()) indit();
 
@@ -101,7 +99,6 @@ async function torol(f, gomb) {
     }
 }
 
-// ---------- Űrlap ----------
 document.getElementById("uj-film").addEventListener("click", () => urlapMegnyitasa(null));
 document.getElementById("megse").addEventListener("click", urlapBezarasa);
 
@@ -155,7 +152,6 @@ urlap.addEventListener("submit", async e => {
     }
 });
 
-// Plakát- és logó-előnézet gépelés közben.
 function elonezet(mezo, kepId) {
     const kep = document.getElementById(kepId);
     const ut = urlap[mezo].value.trim();

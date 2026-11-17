@@ -1,4 +1,3 @@
-// jegyeim.html oldal szkriptje (a CSP miatt nincs inline JavaScript).
 fejlec("jegyeim.html");
 
 const szuro = document.getElementById("nezet");
@@ -24,7 +23,6 @@ async function betolt() {
     try {
         jegyek = await api("/api/jegyfoglalasok/jegyek");
         megjelenit();
-        // A foglalás visszaigazolásáról érkezve rögtön megnyitjuk a jegyet.
         const kod = parameter("kod");
         if (kod) {
             const jegy = jegyek.find(j => j.foglalasKod === kod) || await api("/api/jegyfoglalasok/" + encodeURIComponent(kod) + "/jegy");
@@ -38,7 +36,6 @@ async function betolt() {
 function megjelenit() {
     lista.replaceChildren();
     const lathato = jegyek.filter(j => szuro.value === "osszes" || (szuro.value === "kozelgo") === j.ervenyes);
-    // A lejártak közül a legutóbbi legyen elöl.
     if (szuro.value === "lejart") lathato.reverse();
     if (!lathato.length) {
         const szoveg = !jegyek.length ? "Még nincs jegyed. Foglalj egyet a napi beosztásból!"
@@ -102,7 +99,6 @@ function jegyKartya(j) {
     return kartya;
 }
 
-// ---------- Visszamondás ----------
 /** Egy jegy visszamondása megerősítés után; a szék újra foglalhatóvá válik. */
 async function visszamond(j, gomb) {
     const kerdes = "Biztosan visszamondod ezt a jegyet?\n\n" + j.filmCim + "\n" + szepDatum(j.datum) + ", "
@@ -118,7 +114,6 @@ async function visszamond(j, gomb) {
         uzenet(doboz, "Visszamondtad a jegyet: " + j.filmCim + ", " + szepDatum(j.datum) + " " + ido(j.kezdes)
             + " (" + j.foglalasKod + ").", "siker");
     } catch (h) {
-        // A teljes képernyős nézet eltakarná a hibaüzenetet.
         bezar();
         uzenet(doboz, h.message);
         gomb.disabled = false;
@@ -126,7 +121,6 @@ async function visszamond(j, gomb) {
     }
 }
 
-// Visszamondás foglalási kóddal (pl. ha a jegy nem jelenik meg a listában).
 const kodUrlap = document.getElementById("kod-urlap");
 kodUrlap.addEventListener("submit", async e => {
     e.preventDefault();
@@ -145,7 +139,6 @@ kodUrlap.addEventListener("submit", async e => {
         if (!jegyek.includes(meglevo)) kodUrlap.reset();
         return;
     }
-    // Nincs a betöltött listában: a szerver dönt (nem saját vagy nem létező kód esetén 404).
     if (!confirm("Biztosan visszamondod a(z) " + kod + " foglalást?\nA visszamondás nem vonható vissza.")) return;
     const gomb = kodUrlap.querySelector("button");
     gomb.disabled = true;
@@ -162,7 +155,6 @@ kodUrlap.addEventListener("submit", async e => {
     }
 });
 
-// ---------- Teljes képernyős jegy ----------
 const nezetLemondas = document.getElementById("nezet-lemondas");
 let megnyitott = null;
 
@@ -178,7 +170,6 @@ function megnyit(j) {
     nezet.hidden = false;
     document.body.classList.add("nincs-gorgetes");
     history.replaceState(null, "", "?nezet=" + szuro.value + "&kod=" + encodeURIComponent(j.foglalasKod));
-    // Valódi teljes képernyő, ha a böngésző engedi (kattintásra igen, oldalbetöltéskor nem).
     if (nezet.requestFullscreen && !document.fullscreenElement) nezet.requestFullscreen().catch(() => {});
     document.getElementById("bezar").focus();
 }
@@ -194,7 +185,6 @@ function bezar() {
 
 document.getElementById("bezar").addEventListener("click", bezar);
 document.addEventListener("keydown", e => { if (e.key === "Escape") bezar(); });
-// A háttérre kattintás is bezár.
 nezet.addEventListener("click", e => { if (e.target === nezet || e.target === jegyHelye) bezar(); });
 
 /** A mozijegy: bal felső sarokban a film logóplakátja, alatta minden adat. */

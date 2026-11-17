@@ -1,4 +1,3 @@
-// felbehagyott.html oldal szkriptje (a CSP miatt nincs inline JavaScript).
 fejlec("felbehagyott.html");
 
 const lista = document.getElementById("rendelesek");

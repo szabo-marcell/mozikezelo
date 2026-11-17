@@ -49,7 +49,6 @@ public class NapiBeosztasEntity extends AuditEntity {
     @Column(name = "eredeti_nyelvu", nullable = false)
     private boolean eredetiNyelvu;
 
-    // Milyen típusú jegyet adnak el az előadásra.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "jegy_id", nullable = false)
     private JegyEntity jegy;

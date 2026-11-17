@@ -17,7 +17,6 @@ public class JegyService {
     private final JegyRepository jegyek;
     private final MoziMapper mapper;
 
-    // Az összes jegytípus ár szerint rendezve (a foglalási űrlap jegyválasztójához).
     public List<JegyResponse> osszes() {
         return jegyek.findAll(Sort.by("ar", "nev")).stream().map(mapper::jegy).toList();
     }

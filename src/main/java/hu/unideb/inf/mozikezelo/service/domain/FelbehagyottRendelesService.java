@@ -41,7 +41,6 @@ public class FelbehagyottRendelesService {
         return valasz(rendeles(felhasznaloId, id));
     }
 
-    // Új félbehagyott rendelés; ha ugyanarra az előadásra és székre már van, azt frissíti.
     @Transactional
     public FelbehagyottRendelesResponse ment(Long felhasznaloId, JegyfoglalasRequest request) {
         NapiBeosztasEntity beosztas = foglalasService.eloadasKeresese(request);
@@ -51,12 +50,10 @@ public class FelbehagyottRendelesService {
         return kitolt(rendeles, felhasznaloId, beosztas, request);
     }
 
-    // A rendelés módosítása (pl. másik jegytípus vagy szék a fizetés előtt).
     @Transactional
     public FelbehagyottRendelesResponse modosit(Long felhasznaloId, Long id, JegyfoglalasRequest request) {
         FelbehagyottRendelesEntity rendeles = rendeles(felhasznaloId, id);
         NapiBeosztasEntity beosztas = foglalasService.eloadasKeresese(request);
-        // Ha ugyanerre az előadásra és székre már van másik félbehagyott rendelés, azt összevonjuk ezzel.
         rendelesek.findByFelhasznalo_IdAndNapiBeosztas_IdAndSzekSzam(felhasznaloId, beosztas.getId(), request.szekSzam())
                 .filter(masik -> !masik.getId().equals(id))
                 .ifPresent(masik -> {
@@ -84,12 +81,10 @@ public class FelbehagyottRendelesService {
     }
 
     private FelbehagyottRendelesEntity rendeles(Long felhasznaloId, Long id) {
-        // Más felhasználó rendeléséről sem áruljuk el, hogy létezik.
         return rendelesek.findByIdAndFelhasznalo_Id(id, felhasznaloId)
                 .orElseThrow(() -> new ErforrasNotFoundException("Nem található saját félbehagyott rendelés: " + id));
     }
 
-    // Folytatható, ha az előadás még nem kezdődött el, és a széket közben senki sem foglalta le.
     private FelbehagyottRendelesResponse valasz(FelbehagyottRendelesEntity r) {
         boolean folytathato = !NapiBeosztasService.elkezdodott(r.getNapiBeosztas(), clock)
                 && !foglalasok.existsByNapiBeosztas_IdAndSzekSzam(r.getNapiBeosztas().getId(), r.getSzekSzam());

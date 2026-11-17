@@ -36,7 +36,6 @@ public class JegyEntity extends AuditEntity {
     @Column(nullable = false)
     private int ar;
 
-
     @Column(nullable = false, length = 255)
     private String feltetel;
 

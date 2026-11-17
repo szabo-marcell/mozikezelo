@@ -35,7 +35,6 @@ class BejelentkezesVedelemTests {
 
     @Autowired MockMvc mvc;
 
-    // Minden teszt saját IP-címről és e-mail címekkel dolgozik, hogy a közös Spring-kontextusban ne zavarják egymást.
     private final String egyedi = UUID.randomUUID().toString().substring(0, 8);
 
     private void regisztral(String email) throws Exception {
@@ -63,14 +62,11 @@ class BejelentkezesVedelemTests {
             belep(email, "rossz-jelszo", ip).andExpect(status().isUnauthorized());
         }
         belep(email, "rossz-jelszo", ip).andExpect(status().isUnauthorized());
-        // Az 5. hiba után a helyes jelszó sem enged be, és nem derül ki, hogy helyes volt-e.
         belep(email, "titkos123", ip)
                 .andExpect(status().isTooManyRequests())
                 .andExpect(header().string("Retry-After", "900"))
                 .andExpect(jsonPath("$.detail", containsString("15 perc")));
-        // Más IP-címről sem: a zárolás a fiókra vonatkozik.
         belep(email, "titkos123", "10.1.0.2").andExpect(status().isTooManyRequests());
-        // Ugyanarról az IP-ről egy másik fiók továbbra is beléphet.
         belep(masik, "titkos123", ip).andExpect(status().isOk());
     }
 
@@ -103,7 +99,6 @@ class BejelentkezesVedelemTests {
         String email = "letezo-" + egyedi + "@example.com";
         regisztral(email);
         String ip = "10.4.0.1";
-        // 20 különböző e-mail címmel, mindegyikkel csak egyszer (a fiókonkénti korlát így nem lép életbe).
         for (int i = 0; i < 20; i++) {
             belep("spray" + i + "-" + egyedi + "@example.com", "Jelszo123", ip).andExpect(status().isUnauthorized());
         }
@@ -126,7 +121,6 @@ class BejelentkezesVedelemTests {
         ora.elore(Duration.ofMinutes(1));
         assertDoesNotThrow(() -> vedelem.ellenoriz("a@example.com", "1.1.1.1"));
 
-        // Az ablakon kívüli régi hibák nem számítanak: 2 hiba, 16 perc szünet, 2 hiba -> nincs zárolás.
         vedelem.sikertelen("b@example.com", "2.2.2.2");
         vedelem.sikertelen("b@example.com", "2.2.2.2");
         ora.elore(Duration.ofMinutes(16));
@@ -143,7 +137,6 @@ class BejelentkezesVedelemTests {
                     .andExpect(header().string("Content-Security-Policy", not(containsString("unsafe-inline"))))
                     .andExpect(header().string("Content-Security-Policy", containsString("frame-ancestors 'none'")));
         }
-        // A HTML-oldalakon nincs inline szkript, amit a CSP letiltana.
         mvc.perform(get("/foglalas.html"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
                         .string(not(containsString("<script>"))))

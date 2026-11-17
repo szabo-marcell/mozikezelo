@@ -28,7 +28,6 @@ public class TeremEntity extends AuditEntity {
     @Column(nullable = false)
     private int ferohely;
 
-    // 2D vagy 3D
     @Enumerated(EnumType.STRING)
     @Column(name = "vetites_tipus", nullable = false, length = 10)
     private VetitesTipus vetitesTipus;

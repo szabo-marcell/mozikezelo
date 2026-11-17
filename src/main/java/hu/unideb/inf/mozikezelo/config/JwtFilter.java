@@ -46,8 +46,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (token.isPresent() && SecurityContextHolder.getContext().getAuthentication() == null) {
             Optional<FelhasznaloEntity> felhasznalo = hitelesit(token.get(), request, response, !fejlecbol);
-            // Hibás, lejárt, visszavont token vagy törölt felhasználó: a süti törlődik, a frontend kijelentkezett
-            // állapotot lát. Hitelesítés nélkül megyünk tovább, a végpont jogosultsági szabálya dönt.
             if (felhasznalo.isEmpty() && !fejlecbol) {
                 sutik.torol(response);
             }
@@ -81,7 +79,6 @@ public class JwtFilter extends OncePerRequestFilter {
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
 
-        // Csúszó lejárat a böngészőnek: aktív használat közben nem kell 60 percenként újra belépni.
         if (sutibol && tokenService.megujitando(claims.get())) {
             sutik.beallit(response, tokenService.generateToken(felhasznalo), tokenService.getLejaratMasodperc());
         }
